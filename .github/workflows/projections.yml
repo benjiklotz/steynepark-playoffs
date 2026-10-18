@@ -20,7 +20,7 @@ jobs:
         run: python build_projections.py
       - name: Commit if changed
         run: |
-          if git diff --quiet -- projections.json; then
+            if [ -z "$(git status --porcelain -- projections.json)" ]; then
             echo "No change"; exit 0
           fi
           git config user.name "projections-bot"
