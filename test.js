@@ -140,3 +140,47 @@ assert.deepStrictEqual(Object.fromEntries(Object.entries(picks).filter(([, v]) =
 assert.strictEqual(d.overrides.fp[0], 30);
 console.log('link', h.length, 'chars');
 console.log('ALL TESTS PASSED');
+
+// ---- 7. optimal lineup ----
+{
+  const slots = ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'FLEX', 'K', 'DEF'];
+  const P = { qb1: ['QB'], qb2: ['QB'], rb1: ['RB'], rb2: ['RB'], rb3: ['RB'], wr1: ['WR'], wr2: ['WR'], wr3: ['WR'], te1: ['TE'], k1: ['K'], d1: ['DEF'], bye: ['WR'] };
+  const pr = { qb1: 20, qb2: 22, rb1: 15, rb2: 12, rb3: 14, wr1: 18, wr2: 9, wr3: 11, te1: 8, k1: 7, d1: 6, bye: 0 };
+  const r = E.optimalLineup(slots, Object.keys(P), p => pr[p], p => P[p]);
+  const ids = r.starters.map(s => s.pid).sort().join(',');
+  assert.strictEqual(ids, 'd1,k1,qb2,rb1,rb3,rb2,te1,wr1,wr3'.split(',').sort().join(','));
+  assert.strictEqual(r.total, 22 + 15 + 14 + 18 + 11 + 8 + 12 + 7 + 6);
+  assert.strictEqual(r.starters.find(s => s.slot === 'FLEX').pid, 'rb2');
+  console.log('7 lineup ok', r.total);
+}
+
+// ---- 8. week models: future week uses optimal lineup; live week blends scores ----
+{
+  const L2 = makeLeague(9);
+  L2.slots = ['QB', 'RB', 'WR', 'FLEX'];
+  const players = {};
+  L2.teams.forEach((t, i) => { t.players = ['q' + i, 'r' + i, 'w' + i, 'x' + i]; players['q' + i] = { fp: ['QB'], team: 'T' + i }; players['r' + i] = { fp: ['RB'], team: 'T' + i }; players['w' + i] = { fp: ['WR'], team: 'T' + i }; players['x' + i] = { fp: ['WR'], team: 'B' + i }; });
+  const proj = {}, kickoffs = {};
+  const now = Date.parse('2026-10-19T02:00:00Z');
+  for (const wk of L2.weeks) { if (wk.locked) continue; proj[wk.week] = {}; kickoffs[wk.week] = {}; L2.teams.forEach((t, i) => { proj[wk.week]['q' + i] = 20 + i; proj[wk.week]['r' + i] = 10; proj[wk.week]['w' + i] = 12; proj[wk.week]['x' + i] = 8; }); }
+  // week 10: team 0's players finished (kickoff 5h ago), team 1 in progress (1h ago), others not started
+  kickoffs[10] = { T0: '2026-10-18T21:00:00Z', T1: '2026-10-19T01:00:00Z', T2: '2026-10-19T08:00:00Z' };
+  L2.weeks.find(w => w.week === 10).lineups = { 0: { starters: ['q0', 'r0', 'w0', 'x0'], pts: { q0: 30, r0: 5, w0: 10, x0: 4 } }, 1: { starters: ['q1', 'r1', 'w1', 'x1'], pts: { q1: 15, r1: 3, w1: 6, x1: 0 } } };
+  const B2 = E.buildBase(L2);
+  const M = E.buildWeekModels(L2, B2, { sigma: 20, bias: 0, players, proj, kickoffs }, now, 10);
+  assert.ok(M[10].live && !M[11].live);
+  // team 0 finished: mean = actual (49), sd 0 except x0 (team B0 no kickoff -> still projected 8)
+  assert.ok(Math.abs(M[10].mu[0] - (30 + 5 + 10 + 8)) < 1e-9, 'finished players locked');
+  // team 1: 1h into a 3.25h game -> r = 1 - 1/3.25
+  const r = 1 - 1 / 3.25;
+  assert.ok(Math.abs(M[10].mu[1] - (15 + 3 + 6 + (21 + 10 + 12) * r + 8)) < 1e-9, 'in-progress blend');
+  assert.ok(M[10].sd[1] < M[10].sd[5] && M[10].sd[0] < M[10].sd[1], 'spread shrinks as games finish');
+  // future week 11: optimal lineup = q + r + best wr + flex(other wr)
+  assert.ok(Math.abs(M[11].mu[3] - ((23 + 10 + 12 + 8) * 0.9 + 0.1 * B2.model[3].mu)) < 1e-9, 'future week blend');
+  const p = E.winProb(B2, 0, 1, M[10]);
+  assert.ok(p > 0 && p < 0.5, 'live win prob sensible (team 1 projects higher)');
+  const sim2 = E.simulate(L2, B2, {}, {}, 300, 3, M);
+  assert.ok(Math.abs(sim2.reduce((x, y) => x + y.playoffs, 0) - 6) < 1e-6);
+  console.log('8 week models ok', M[10].mu.slice(0, 3).map(x => x.toFixed(1)), M[10].sd.slice(0, 3).map(x => x.toFixed(1)));
+}
+console.log('PROJECTION TESTS PASSED');

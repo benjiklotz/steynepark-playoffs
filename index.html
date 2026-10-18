@@ -111,6 +111,8 @@ main { max-width: 1240px; margin: 0 auto; padding: 18px 20px 60px; display: grid
 .side.final { cursor: default; }
 .side.final:hover { border-color: var(--line); }
 .side .score { font-weight: 600; }
+b.live { color: var(--win); font-weight: 700; font-size: 11px; letter-spacing: .02em; }
+b.done { color: var(--muted); font-weight: 600; font-size: 11px; }
 
 .teamgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; padding: 12px 14px 0; }
 .teamgrid button { border: 1px solid var(--line); background: transparent; border-radius: 8px; padding: 7px 9px; text-align: left; font-weight: 500; line-height: 1.2; }
@@ -189,6 +191,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
         <button type="button" id="nTeam" aria-pressed="true">Team names</button>
         <button type="button" id="nMgr" aria-pressed="false">Managers</button>
       </div>
+      <button class="btn ghost sm" id="btnRefresh" type="button" title="Reload scores and projections from Sleeper">Refresh</button>
       <button class="btn ghost sm" id="btnUndo" type="button" disabled title="Ctrl+Z">Undo</button>
       <button class="btn ghost sm" id="btnRedo" type="button" disabled title="Ctrl+Shift+Z">Redo</button>
       <button class="btn ghost sm" id="btnReset" type="button">Reset to current standings</button>
@@ -223,14 +226,12 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
         <div class="pb adv">
           <p class="small" style="margin-bottom:10px">Fair Play is a team's record if it had played every other team every week (up to 11 wins a week). When a future game is picked, the default projection uses that team's own average Fair Play wins in weeks it won or lost this season, blended with the league average, so a team picked to win a lot is projected to pick up more than its share. Type a number to override a team's total Fair Play wins over its remaining weeks; leave blank to keep the projection. Points For works the same way.</p>
           <div style="overflow-x:auto"><table id="advTable"></table></div>
-          <div id="mgrSection" class="hidden">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 8px">
             <h2>Manager mapping</h2>
             <button class="btn sm" id="btnCopyMgr" type="button">Copy locked config</button>
           </div>
           <p class="small muted" id="mgrNote" style="margin-bottom:8px"></p>
           <div style="overflow-x:auto"><table id="mgrTable"></table></div>
-          </div>
         </div>
       </div>
     </div>
@@ -259,7 +260,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       </div>
       <div class="pb" style="padding-top:6px">
         <div style="overflow-x:auto"><table id="probTable"></table></div>
-        <p class="small muted" style="margin-top:8px">Unpicked games are simulated from each team's scoring average and spread this season; picked games are fixed. Fair Play and Points For in future weeks come from the same simulated scores unless overridden in Advanced.</p>
+        <p class="small muted" style="margin-top:8px" id="simNote"></p>
       </div>
     </div>
 
@@ -396,10 +397,14 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     return { state: s, model, sd, lockedWeeks, league: lg };
   }
 
-  // P(a beats b) from the score model
-  function winProb(base, a, b) {
-    const d = (base.model[a].mu - base.model[b].mu) / (Math.SQRT2 * base.sd);
-    return 0.5 * (1 + erf(d));
+  // P(a beats b). With a week model (from Sleeper projections, possibly blended with live scores) use its
+  // per-team mean and spread; otherwise fall back to the season scoring-average model.
+  function winProb(base, a, b, model) {
+    let d, s;
+    if (model) { d = model.mu[a] - model.mu[b]; s = Math.sqrt(model.sd[a] ** 2 + model.sd[b] ** 2); }
+    else { d = base.model[a].mu - base.model[b].mu; s = Math.SQRT2 * base.sd; }
+    if (s < 1e-9) return d > 0 ? 1 : d < 0 ? 0 : 0.5;
+    return 0.5 * (1 + erf(d / (Math.SQRT2 * s)));
   }
   function erf(x) { // Abramowitz-Stegun 7.1.26
     const sgn = x < 0 ? -1 : 1; x = Math.abs(x);
@@ -574,7 +579,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     spare = v * m; return u * m;
   }
 
-  function simulate(league, base, picks, overrides, nSims, wildcards) {
+  function simulate(league, base, picks, overrides, nSims, wildcards, models) {
     const n = league.nTeams;
     const tally = Array.from({ length: n }, () => ({ playoffs: 0, div: 0, seeds: new Array(7).fill(0), seedSum: 0 }));
     const future = league.weeks.filter(w => !w.locked);
@@ -585,7 +590,9 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       const s = cloneState(base.state);
       const fpAdd = new Array(n).fill(0), pfAdd = new Array(n).fill(0);
       for (const wk of future) {
-        for (let i = 0; i < n; i++) scores[i] = base.model[i].mu + sd * gauss();
+        const m = models && models[wk.week];
+        if (m) for (let i = 0; i < n; i++) scores[i] = m.mu[i] + m.sd[i] * gauss();
+        else for (let i = 0; i < n; i++) scores[i] = base.model[i].mu + sd * gauss();
         wk.games.forEach((g, gi) => {
           const p = picks[`${wk.week}:${gi}`] | 0;
           if (p === 1 && scores[g.a] < scores[g.b]) { const x = scores[g.a]; scores[g.a] = scores[g.b]; scores[g.b] = x; }
@@ -608,6 +615,77 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       bye: (t.seeds[1] + t.seeds[2]) / nSims,
       avgSeed: t.playoffs ? t.seedSum / t.playoffs : null,
     }));
+  }
+
+  // ---------- projections: optimal lineups and per-week score models ----------
+  const SLOT_ELIG = { QB: ['QB'], RB: ['RB'], WR: ['WR'], TE: ['TE'], K: ['K'], DEF: ['DEF'], FLEX: ['RB', 'WR', 'TE'], SUPER_FLEX: ['QB', 'RB', 'WR', 'TE'], REC_FLEX: ['WR', 'TE'], WRRB_FLEX: ['RB', 'WR'], WR_TE: ['WR', 'TE'], DL: ['DL'], LB: ['LB'], DB: ['DB'], IDP_FLEX: ['DL', 'LB', 'DB'] };
+
+  // Greedy best lineup: fill the most restrictive slots first, each with the highest projected unused eligible player.
+  function optimalLineup(slots, pids, projOf, posOf) {
+    const order = slots.map((s, i) => ({ s, i, e: SLOT_ELIG[s] || [s] })).sort((a, b) => a.e.length - b.e.length);
+    const used = new Set(); const picks = new Array(slots.length).fill(null); let total = 0;
+    for (const o of order) {
+      let best = null, bp = -Infinity;
+      for (const pid of pids) {
+        if (used.has(pid)) continue;
+        const fp = posOf(pid); if (!fp.some(p => o.e.includes(p))) continue;
+        const v = projOf(pid); if (v > bp) { bp = v; best = pid; }
+      }
+      if (best !== null) { used.add(best); picks[o.i] = { pid: best, pts: bp, slot: o.s }; total += bp; }
+    }
+    return { total, starters: picks.filter(Boolean) };
+  }
+
+  const GAME_MS = 3.25 * 3600e3; // an NFL game is treated as over this long after kickoff
+
+  // Build {week: {mu[], sd[], live, detail[]}} for every unlocked week from a projections.json payload.
+  // Future weeks: optimal lineup from the current roster, blended a little toward the season average the
+  // further out the week is. The current week, once kickoffs have started: each set starter counts actual
+  // points for the part of the game already played plus projection for the rest, and the spread shrinks
+  // as fewer points are left to come.
+  function buildWeekModels(league, base, P, now, cur) {
+    const models = {};
+    if (!P || !P.proj || !P.players) return models;
+    const sigma = Number(P.sigma) || 20, bias = Number(P.bias) || 0;
+    const slots = league.slots || P.slots || [];
+    for (const wk of league.weeks) {
+      if (wk.locked) continue;
+      const pw = P.proj[String(wk.week)]; if (!pw) continue;
+      const kick = (P.kickoffs || {})[String(wk.week)] || {};
+      const kickMs = {}; for (const t in kick) { const v = Date.parse(kick[t]); if (!isNaN(v)) kickMs[t] = v; }
+      const started = Object.values(kickMs).some(k => k <= now);
+      const live = wk.week === cur && started;
+      const lam = Math.min(0.5, 0.1 * Math.max(0, wk.week - cur));
+      const m = { mu: [], sd: [], live, detail: [] };
+      const projOf = pid => Number(pw[pid]) || 0;
+      const posOf = pid => (P.players[pid] && P.players[pid].fp) || [];
+      for (let i = 0; i < league.nTeams; i++) {
+        const t = league.teams[i];
+        const lu = wk.lineups && wk.lineups[i];
+        let starters;
+        if (live && lu && lu.starters && lu.starters.length) starters = lu.starters.filter(s => s && String(s) !== '0').map(pid => ({ pid: String(pid), pts: projOf(pid), slot: '' }));
+        else starters = optimalLineup(slots, t.players || [], projOf, posOf).starters;
+        let mean = 0, projSum = 0, remSum = 0, actual = 0, finished = 0;
+        for (const s of starters) {
+          const info = P.players[s.pid] || {}; const k = kickMs[info.team];
+          let r = 1, pts = 0;
+          if (live && k != null && k <= now) {
+            const frac = (now - k) / GAME_MS; r = frac >= 1 ? 0 : Math.max(0, 1 - frac);
+            pts = Number(lu && lu.pts && lu.pts[s.pid]) || 0;
+            if (r === 0) finished++;
+          }
+          mean += pts + s.pts * r; projSum += s.pts; remSum += s.pts * r; actual += pts;
+        }
+        const remFrac = projSum > 0 ? remSum / projSum : (live && starters.length && finished === starters.length ? 0 : 1);
+        const projMean = mean + bias * remFrac;
+        const mu = (1 - lam) * projMean + lam * base.model[i].mu;
+        const sd = Math.sqrt(((1 - lam) * sigma * sigma + lam * base.sd * base.sd) * remFrac);
+        m.mu.push(mu); m.sd.push(sd);
+        m.detail.push({ proj: projSum, actual, remFrac, mu, starters, setLineup: !!(live && lu && lu.starters && lu.starters.length) });
+      }
+      models[wk.week] = m;
+    }
+    return models;
   }
 
   // ---------- share links ----------
@@ -643,9 +721,8 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     return { picks, overrides };
   }
 
-  root.Engine = { pct, fmtRec, buildBase, buildScenario, remainingGames, teamRemaining, resolveSeed, seedPlayoffs, simulate, winProb, encodeScenario, decodeScenario, projectedFP, projectedPF, STEPS };
+  root.Engine = { pct, fmtRec, buildBase, buildScenario, remainingGames, teamRemaining, resolveSeed, seedPlayoffs, simulate, winProb, encodeScenario, decodeScenario, projectedFP, projectedPF, optimalLineup, buildWeekModels, STEPS };
 })(typeof window !== 'undefined' ? window : globalThis);
-
 </script>
 <script>
 (function () {
@@ -654,8 +731,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   const DEFAULT_LEAGUE = '1325795538116833280';
 
   // Manager names. Matched on load by Sleeper user id first, then Sleeper username, then current team name.
-  // The Manager mapping table is hidden; visit the site with ?admin=1 to see it under Advanced, and use
-  // "Copy locked config" there to regenerate this list (e.g. a new manager or a new season's league).
+  // To lock a manager to an account permanently, paste the user_id from Advanced > Manager mapping > "Copy locked config".
   const MANAGERS = [
     { manager: "Benji", user_id: "330570686437261312", username: "BenjiK", team: "Sydney Sideliners" },
     { manager: "Seb", user_id: "330686532409131008", username: "sebh003", team: "Out the mud" },
@@ -677,7 +753,6 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     m = MANAGERS.find(x => x.team && norm(x.team) === norm(teamName)); if (m) return { m, by: 'team name' };
     return null;
   }
-  const ADMIN = new URLSearchParams(location.search).get('admin') === '1';
   let nameMode = 'team';
   try { nameMode = localStorage.getItem('ffpo:names') === 'mgr' ? 'mgr' : 'team'; } catch (e) { /* ignore */ }
   const API = 'https://api.sleeper.app/v1';
@@ -686,6 +761,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   const pctS = x => `${Math.round(x * 100)}%`;
 
   let leagueId, league, base, picks = {}, overrides = { fp: {}, pf: {} };
+  let models = {}, projInfo = null, projPlayers = {}; // projInfo: { generated, weeks, live } or null when falling back to season averages
   let view = 'week', curTab = 1, selTeam = 0, liveProb = true, sim = null, simTimer = null, renderTimer = null;
   let scenario, seeding, warnings = [];
 
@@ -707,6 +783,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       const raw = await Promise.all(Array.from({ length: lastReg }, (_, i) => j(`${API}/league/${leagueId}/matchups/${i + 1}`)));
       league = buildLeague(lg, state, rosters, users, raw);
       base = E.buildBase(league);
+      await loadProjections();
       restore();
       $('loadBox').innerHTML = warnings.length ? `<div class="notice">${warnings.map(w => `<p>${esc(w)}</p>`).join('')}</div>` : '';
       $('main').classList.remove('hidden');
@@ -723,6 +800,22 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     }
   }
 
+  async function loadProjections() {
+    models = {}; projInfo = null;
+    try {
+      const r = await fetch(`projections.json?v=${Math.floor(Date.now() / 600000)}`, { cache: 'no-store' });
+      if (!r.ok) throw new Error(`projections.json ${r.status}`);
+      const P = await r.json();
+      if (String(P.league_id) !== String(leagueId) || String(P.season) !== String(league.season)) throw new Error('projections are for a different league or season');
+      models = E.buildWeekModels(league, base, P, Date.now(), league.cur); projPlayers = P.players || {};
+      const weeks = Object.keys(models).map(Number).sort((x, y) => x - y);
+      if (!weeks.length) throw new Error('no usable weeks in projections');
+      projInfo = { generated: new Date(P.generated), weeks, live: weeks.some(w => models[w].live), sigma: P.sigma };
+    } catch (e) {
+      console.warn('Using season scoring averages:', e.message || e);
+    }
+  }
+
   function buildLeague(lg, state, rosters, users, raw) {
     rosters = rosters.slice().sort((a, b) => a.roster_id - b.roster_id);
     const idxOf = {}; rosters.forEach((r, i) => { idxOf[r.roster_id] = i; });
@@ -734,6 +827,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       const name = (u.metadata && u.metadata.team_name) || u.display_name || `Team ${r.roster_id}`;
       const hit = matchManager(r.owner_id, u.display_name, name);
       return { id: r.roster_id, name, owner: u.display_name || '', userId: r.owner_id, div: (r.settings && r.settings.division) || 1,
+        players: (r.players || []).map(String),
         manager: hit ? hit.m.manager : (u.display_name || name), matchedBy: hit ? hit.by : null };
     });
     const divs = {};
@@ -750,23 +844,25 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     raw.forEach((arr, i) => {
       const week = i + 1;
       const locked = week < cur;
-      const byMid = {}; const scores = {};
+      const byMid = {}; const scores = {}; const lineups = {};
       (arr || []).forEach(m => {
         if (!(m.roster_id in idxOf)) return;
         const idx = idxOf[m.roster_id];
         const pts = m.custom_points != null ? m.custom_points : (m.points || 0);
         scores[idx] = pts;
+        lineups[idx] = { starters: (m.starters || []).map(String), pts: m.players_points || {} };
         if (m.matchup_id == null) return;
         (byMid[m.matchup_id] = byMid[m.matchup_id] || []).push(idx);
       });
       const games = Object.values(byMid).filter(p => p.length === 2).map(([a, b]) => ({ a, b, pa: scores[a] || 0, pb: scores[b] || 0 }));
       if (!games.length) warnings.push(`Week ${week}: Sleeper has not published matchups yet, so it is left out of the calculation.`);
       if (!locked && games.length && firstOpenWeek === null) firstOpenWeek = week;
-      weeks.push({ week, locked, games, scores });
+      weeks.push({ week, locked, games, scores, lineups });
     });
     // drop future weeks with no schedule from the engine's view
     const usable = weeks.filter(w => w.games.length);
-    return { name: lg.name || 'League', season: lg.season, teams, divs, weeks: usable, nTeams: teams.length, cur, firstOpenWeek, lastReg: raw.length, fetchedAt: new Date() };
+    const slots = (lg.roster_positions || []).filter(s => !['BN', 'IR', 'TAXI'].includes(s));
+    return { name: lg.name || 'League', season: lg.season, teams, divs, weeks: usable, nTeams: teams.length, cur, firstOpenWeek, lastReg: raw.length, fetchedAt: new Date(), slots };
   }
 
   // ---------- persistence ----------
@@ -789,7 +885,8 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   const N = i => nameMode === 'mgr' ? T(i).manager : T(i).name;
   const recOf = (s, i) => E.fmtRec(s.w[i], s.l[i], s.t[i]);
   const divRecOf = (s, i) => E.fmtRec(s.dw[i], s.dl[i], s.dt[i]);
-  const winP = (a, b) => E.winProb(base, a, b);
+  const winP = (a, b, week) => E.winProb(base, a, b, models[week]);
+  const muOf = (i, week) => models[week] ? models[week].mu[i] : base.model[i].mu;
   function setPick(key, val) {
     if (val) picks[key] = val; else delete picks[key];
     scheduleRender();
@@ -825,8 +922,31 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     const rem = E.remainingGames(league);
     const left = rem.length - Object.keys(picks).filter(k => picks[k]).length;
     const wkTxt = league.cur >= 99 ? 'Regular season complete' : `Week ${league.cur} of ${league.lastReg}`;
-    $('status').textContent = `${wkTxt} · ${rem.length} regular-season games still to play · Sleeper data as of ${league.fetchedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+    const when = league.fetchedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    let src;
+    if (!projInfo) src = 'win chances from season scoring averages (projections unavailable)';
+    else {
+      const gen = projInfo.generated.toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+      src = `${projInfo.live ? 'live scores blended with ' : ''}Sleeper projections from ${gen}`;
+    }
+    $('status').textContent = `${wkTxt} · ${rem.length} regular-season games still to play · Sleeper data as of ${when} · ${src}`;
+    $('simNote').textContent = projInfo
+      ? 'Unpicked games are simulated from each team\'s projected optimal lineup (Sleeper player projections scored with league settings), with the spread taken from how far actual scores have landed from projections this season. In a week with games under way, points already scored are locked in and only the remainder is uncertain. Picked games are fixed. Fair Play and Points For in future weeks come from the same simulated scores unless overridden in Advanced.'
+      : 'Projections are unavailable, so unpicked games are simulated from each team\'s scoring average and spread this season; picked games are fixed. Fair Play and Points For in future weeks come from the same simulated scores unless overridden in Advanced.';
     $('unpicked').textContent = left ? `${left} game${left === 1 ? '' : 's'} unpicked` : rem.length ? 'Every remaining game picked' : '';
+  }
+
+  function liveTag(i, week) {
+    const m = models[week]; if (!m || !m.live) return '';
+    const d = m.detail[i];
+    return d.remFrac <= 0 ? ' <b class="done">final</b>' : d.remFrac < 1 ? ' <b class="live">live</b>' : '';
+  }
+  function projTitle(i, week) {
+    const m = models[week]; if (!m) return 'Season scoring average (projections unavailable)';
+    const d = m.detail[i];
+    const names = d.starters.map(s => (projPlayers[s.pid] && projPlayers[s.pid].name) || s.pid).join(', ');
+    if (m.live) return `${d.setLineup ? 'Set lineup' : 'Optimal lineup'}: ${d.actual.toFixed(1)} scored so far, ${Math.round(d.remFrac * 100)}% of projected points still to come (${names})`;
+    return `Optimal lineup from current roster, projected ${d.proj.toFixed(1)}${week > league.cur ? ', blended toward season average for a future week' : ''}`;
   }
 
   function renderSeeds() {
@@ -859,7 +979,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
 
   // week view
   function buildWeekTabs() {
-    $('weekTabs').innerHTML = league.weeks.map(w => `<button type="button" data-w="${w.week}" aria-pressed="${w.week === curTab}">Wk ${w.week}${w.locked ? '' : '<span class="dot hidden"></span>'}</button>`).join('');
+    $('weekTabs').innerHTML = league.weeks.map(w => `<button type="button" data-w="${w.week}" aria-pressed="${w.week === curTab}">Wk ${w.week}${models[w.week] && models[w.week].live ? ' <b class="live">live</b>' : ''}${w.locked ? '' : '<span class="dot hidden"></span>'}</button>`).join('');
     $('weekTabs').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { curTab = Number(b.dataset.w); buildWeekTabs(); renderWeek(); }));
   }
   function updateTabDots() {
@@ -877,13 +997,13 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       const cls = my > th ? 'win' : my < th ? 'lose' : '';
       return `<div class="side final ${right ? 'right' : ''} ${cls}"><span class="nm">${esc(N(i))}</span><span class="meta"><span class="score">${my.toFixed(2)}</span><span>${esc(league.divs[T(i).div])}</span></span></div>`;
     }
-    const p = winP(i, opp);
+    const p = winP(i, opp, wk.week);
     const mine = right ? 2 : 1;
     const cls = pick === mine ? 'win' : pick ? 'lose' : '';
     const pp = sim ? `<span title="Chance of making the playoffs">${pctS(sim[i].playoffs)} in</span>` : '';
     return `<button type="button" class="side ${right ? 'right' : ''} ${cls}" data-key="${key}" data-val="${mine}" aria-pressed="${pick === mine}">
       <span class="nm">${esc(N(i))}</span>
-      <span class="meta"><span>${recOf(s, i)}</span><span title="Projected chance of winning this game">${pctS(p)} to win</span>${pp}</span>
+      <span class="meta"><span>${recOf(s, i)}</span><span title="${projTitle(i, wk.week)}">${muOf(i, wk.week).toFixed(1)} proj${liveTag(i, wk.week)}</span><span title="Chance of winning this game">${pctS(p)} to win</span>${pp}</span>
       <span class="bar"><i style="width:${Math.round(p * 100)}%"></i></span></button>`;
   }
   function renderWeek() {
@@ -898,7 +1018,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       const v = Number(b.dataset.val); const k = b.dataset.key;
       setPick(k, picks[k] === v ? 0 : v);
     }));
-    const fav = $('wkFav'); if (fav) fav.addEventListener('click', () => { wk.games.forEach((g, gi) => { picks[`${wk.week}:${gi}`] = winP(g.a, g.b) >= 0.5 ? 1 : 2; }); scheduleRender(); });
+    const fav = $('wkFav'); if (fav) fav.addEventListener('click', () => { wk.games.forEach((g, gi) => { picks[`${wk.week}:${gi}`] = winP(g.a, g.b, wk.week) >= 0.5 ? 1 : 2; }); scheduleRender(); });
     const clr = $('wkClear'); if (clr) clr.addEventListener('click', () => { wk.games.forEach((g, gi) => delete picks[`${wk.week}:${gi}`]); scheduleRender(); });
   }
 
@@ -923,8 +1043,8 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
         return `<div class="tg final"><span class="wk">Wk ${wk.week}</span>${oppTxt}<span class="wl"><span style="color:${r === 'W' ? 'var(--win)' : r === 'L' ? 'var(--loss)' : 'inherit'}">${r} ${my.toFixed(1)}–${th.toFixed(1)}</span></span></div>`;
       }
       const pick = picks[key] | 0; const mine = g.a === i ? 1 : 2; const theirs = 3 - mine;
-      const p = winP(i, opp);
-      return `<div class="tg"><span class="wk">Wk ${wk.week}</span>${oppTxt}<span class="wl" title="${pctS(p)} projected to win">
+      const p = winP(i, opp, wk.week);
+      return `<div class="tg"><span class="wk">Wk ${wk.week}</span>${oppTxt}<span class="wl" title="${muOf(i, wk.week).toFixed(1)} v ${muOf(opp, wk.week).toFixed(1)} projected, ${pctS(p)} to win">
         <button type="button" class="${pick === mine ? 'on-w' : ''}" data-key="${key}" data-val="${mine}" aria-pressed="${pick === mine}">Win</button>
         <button type="button" class="${pick === theirs ? 'on-l' : ''}" data-key="${key}" data-val="${theirs}" aria-pressed="${pick === theirs}">Loss</button></span></div>`;
     }).join('');
@@ -947,7 +1067,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       for (const g of mine) {
         const p = picks[g.key] | 0; const opp = g.a === i ? g.b : g.a; const meA = g.a === i;
         if (p) { const won = (p === 1) === meA; if (won) pw++; else pl++; fpProj += E.projectedFP(base, i, won); pfProj += E.projectedPF(base, i, won); }
-        else { const q = winP(i, opp); fpProj += q * E.projectedFP(base, i, true) + (1 - q) * E.projectedFP(base, i, false); pfProj += q * E.projectedPF(base, i, true) + (1 - q) * E.projectedPF(base, i, false); }
+        else { const q = winP(i, opp, g.week); fpProj += q * E.projectedFP(base, i, true) + (1 - q) * E.projectedFP(base, i, false); pfProj += q * E.projectedPF(base, i, true) + (1 - q) * E.projectedPF(base, i, false); }
       }
       const unp = mine.length - pw - pl;
       const avgRef = (perWeek / 2) * mine.length;
@@ -961,7 +1081,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
         <td class="num"><input type="number" step="1" min="0" data-kind="pf" data-i="${i}" value="${pfO != null ? pfO : ''}" placeholder="${pfProj.toFixed(0)}" class="${pfO != null ? 'over' : ''}" aria-label="Override remaining points for ${esc(N(i))}"></td></tr>`;
     }
     $('advTable').innerHTML = html + '</tbody>';
-    if (ADMIN) { $('mgrSection').classList.remove('hidden'); renderManagerMap(); }
+    renderManagerMap();
     $('advTable').querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => {
       const i = Number(inp.dataset.i); const tgt = overrides[inp.dataset.kind];
       if (inp.value === '' || isNaN(Number(inp.value))) delete tgt[i]; else tgt[i] = Number(inp.value);
@@ -985,7 +1105,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     clearTimeout(simTimer);
     simTimer = setTimeout(() => {
       const n = Number($('nsims').value) || 3000;
-      sim = E.simulate(league, base, picks, overrides, n, 3);
+      sim = E.simulate(league, base, picks, overrides, n, 3, models);
       renderProb(); renderSeeds();
       if (view === 'week') renderWeek();
     }, 120);
@@ -1023,7 +1143,8 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   $('vWeek').addEventListener('click', () => setView('week'));
   $('vTeam').addEventListener('click', () => setView('team'));
   $('vAdv').addEventListener('click', () => setView('adv'));
-  $('btnFav').addEventListener('click', () => { E.remainingGames(league).forEach(g => { if (!picks[g.key]) picks[g.key] = winP(g.a, g.b) >= 0.5 ? 1 : 2; }); scheduleRender(); });
+  $('btnFav').addEventListener('click', () => { E.remainingGames(league).forEach(g => { if (!picks[g.key]) picks[g.key] = winP(g.a, g.b, g.week) >= 0.5 ? 1 : 2; }); scheduleRender(); });
+  $('btnRefresh').addEventListener('click', () => location.reload());
   $('btnClear').addEventListener('click', () => { picks = {}; scheduleRender(); });
   $('btnReset').addEventListener('click', () => { picks = {}; overrides = { fp: {}, pf: {} }; scheduleRender(); toast('Back to current standings. Undo brings the scenario back'); });
   $('btnUndo').addEventListener('click', undo);
@@ -1047,7 +1168,6 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
 
   load();
 })();
-
 </script>
 </body>
 </html>
