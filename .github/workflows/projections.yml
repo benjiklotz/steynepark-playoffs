@@ -1,0 +1,30 @@
+name: Update projections
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # every 3 hours (UTC); Cloudflare redeploys only when the file changes
+  workflow_dispatch:         # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build projections.json
+        run: python build_projections.py
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- projections.json; then
+            echo "No change"; exit 0
+          fi
+          git config user.name "projections-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add projections.json
+          git commit -m "Update projections $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
