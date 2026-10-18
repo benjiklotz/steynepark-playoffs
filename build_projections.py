@@ -24,13 +24,14 @@ API = os.environ.get("SLEEPER_API", "https://api.sleeper.app")
 POSITIONS = ["QB", "RB", "WR", "TE", "K", "DEF"]
 ESPN_TO_SLEEPER = {"WSH": "WAS"}
 UA = {"User-Agent": "steynepark-playoffs/1.0 (+https://steyneparkleague.com)"}
+BROWSER_UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36", "Accept": "application/json"}
 
 
-def get(url, retries=3, timeout=60):
+def get(url, retries=3, timeout=60, headers=None):
     last = None
     for i in range(retries):
         try:
-            req = urllib.request.Request(url, headers=UA)
+            req = urllib.request.Request(url, headers=headers or UA)
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return json.loads(r.read().decode("utf-8"))
         except Exception as e:  # noqa: BLE001
@@ -74,27 +75,32 @@ _sleeper_schedule = None
 
 
 def fetch_kickoffs(season, week):
-    """{NFL team abbrev: ISO kickoff} for one week. ESPN's public scoreboard first, Sleeper's schedule as fallback."""
+    """{NFL team abbrev: kickoff}. Exact ISO timestamps from ESPN's public scoreboard where possible;
+    otherwise Sleeper's schedule, which may only give the date (the site handles date-only safely)."""
     global _sleeper_schedule
     out = {}
-    url = f"https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week={week}&dates={season}"
-    data = get(url, retries=2)
-    if isinstance(data, dict):
+    base = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
+    for url in (f"{base}?seasontype=2&week={week}&dates={season}", f"{base}?seasontype=2&week={week}"):
+        data = get(url, retries=2, headers=BROWSER_UA)
+        if not isinstance(data, dict):
+            continue
         for ev in data.get("events") or []:
             when = ev.get("date")
+            if str((ev.get("season") or {}).get("year") or season) != str(season):
+                continue
             for comp in ev.get("competitions") or []:
                 for c in comp.get("competitors") or []:
                     ab = ((c.get("team") or {}).get("abbreviation") or "").upper()
                     if ab and when:
                         out[ESPN_TO_SLEEPER.get(ab, ab)] = when
-    if out:
-        return out
+        if out:
+            return out, "espn"
     if _sleeper_schedule is None:
         _sleeper_schedule = get(f"{API}/schedule/nfl/regular/{season}") or []
     for g in _sleeper_schedule if isinstance(_sleeper_schedule, list) else []:
         if str(g.get("week")) != str(week):
             continue
-        when = g.get("date") or g.get("start_time") or g.get("kickoff")
+        when = g.get("start_time") or g.get("kickoff") or g.get("date")
         if isinstance(when, (int, float)):
             when = datetime.fromtimestamp(when / (1000 if when > 1e11 else 1), tz=timezone.utc).isoformat(timespec="seconds")
         if not when:
@@ -102,8 +108,8 @@ def fetch_kickoffs(season, week):
         for key in ("home", "away", "home_team", "away_team"):
             ab = str(g.get(key) or "").upper()
             if ab:
-                out[ab] = when
-    return out
+                out[ab] = str(when)
+    return out, "sleeper-schedule"
 
 
 def main():
@@ -163,10 +169,11 @@ def main():
             if pid not in players:
                 players[pid] = player_info(pid, e)
         proj[str(week)] = wk
-        kick = fetch_kickoffs(season, week)
+        kick, src = fetch_kickoffs(season, week)
         if kick:
             kickoffs[str(week)] = kick
-        print(f"week {week}: {len(wk)} rostered players projected, {len(kick)} teams with kickoff times")
+        exact = sum(1 for v in kick.values() if "T" in str(v))
+        print(f"week {week}: {len(wk)} rostered players projected, {len(kick)} teams with kickoffs from {src} ({exact} with exact times)")
         time.sleep(0.3)
 
     # projection error so far this season: actual starter points vs projected, per team-week

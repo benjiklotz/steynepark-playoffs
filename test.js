@@ -184,3 +184,32 @@ console.log('ALL TESTS PASSED');
   console.log('8 week models ok', M[10].mu.slice(0, 3).map(x => x.toFixed(1)), M[10].sd.slice(0, 3).map(x => x.toFixed(1)));
 }
 console.log('PROJECTION TESTS PASSED');
+
+// ---- 9. date-only kickoffs (Sleeper schedule fallback) must not mark unplayed games final ----
+{
+  const L3 = makeLeague(5);
+  L3.slots = ['QB', 'RB'];
+  const players = {}; const proj = {}; const kickoffs = {};
+  L3.teams.forEach((t, i) => { t.players = ['q' + i, 'r' + i]; players['q' + i] = { fp: ['QB'], team: i < 2 ? 'THU' : 'SUN' }; players['r' + i] = { fp: ['RB'], team: 'SUN' }; });
+  L3.weeks.filter(w => !w.locked).forEach(w => { proj[w.week] = {}; L3.teams.forEach((t, i) => { proj[w.week]['q' + i] = 20; proj[w.week]['r' + i] = 10; }); });
+  kickoffs[6] = { THU: '2026-10-15', SUN: '2026-10-18' };
+  L3.weeks.find(w => w.week === 6).lineups = { 0: { starters: ['q0', 'r0'], pts: { q0: 31 } }, 1: { starters: ['q1', 'r1'], pts: { q1: 4 } } };
+  const B3 = E.buildBase(L3);
+  const P3 = { sigma: 20, bias: 0, players, proj, kickoffs };
+  // Sunday 21:42 Sydney = 10:42 UTC: Thursday game over, Sunday games not started
+  let M = E.buildWeekModels(L3, B3, P3, Date.parse('2026-10-18T10:42:00Z'), 6);
+  assert.ok(M[6].live);
+  assert.strictEqual(M[6].detail[0].done, 1); assert.strictEqual(M[6].detail[0].n, 2);
+  assert.ok(Math.abs(M[6].mu[0] - (31 + 10)) < 1e-9, 'Thursday actual + Sunday projection');
+  assert.ok(Math.abs(M[6].mu[1] - (4 + 10)) < 1e-9);
+  assert.ok(Math.abs(M[6].mu[2] - 30) < 1e-9 && M[6].detail[2].done === 0 && M[6].detail[2].started === 0, 'unplayed team not final');
+  // Sunday 20:00 UTC (games under way, time unknown): projection kept until outscored
+  L3.weeks.find(w => w.week === 6).lineups[2] = { starters: ['q2', 'r2'], pts: { q2: 25, r2: 3 } };
+  M = E.buildWeekModels(L3, B3, P3, Date.parse('2026-10-18T20:00:00Z'), 6);
+  assert.ok(Math.abs(M[6].mu[2] - (25 + 10)) < 1e-9 && M[6].detail[2].done === 0, 'in-window: max(points, projection)');
+  // Tuesday 09:00 UTC: everything on the Sunday date is final
+  M = E.buildWeekModels(L3, B3, P3, Date.parse('2026-10-20T09:00:00Z'), 6);
+  assert.ok(Math.abs(M[6].mu[2] - 28) < 1e-9 && M[6].detail[2].done === 2 && M[6].sd[2] === 0, 'all final after the day');
+  console.log('9 date-only kickoffs ok');
+}
+console.log('DATE-ONLY TESTS PASSED');

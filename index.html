@@ -226,12 +226,14 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
         <div class="pb adv">
           <p class="small" style="margin-bottom:10px">Fair Play is a team's record if it had played every other team every week (up to 11 wins a week). When a future game is picked, the default projection uses that team's own average Fair Play wins in weeks it won or lost this season, blended with the league average, so a team picked to win a lot is projected to pick up more than its share. Type a number to override a team's total Fair Play wins over its remaining weeks; leave blank to keep the projection. Points For works the same way.</p>
           <div style="overflow-x:auto"><table id="advTable"></table></div>
+          <div id="mgrSection" class="hidden">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 8px">
             <h2>Manager mapping</h2>
             <button class="btn sm" id="btnCopyMgr" type="button">Copy locked config</button>
           </div>
           <p class="small muted" id="mgrNote" style="margin-bottom:8px"></p>
           <div style="overflow-x:auto"><table id="mgrTable"></table></div>
+          </div>
         </div>
       </div>
     </div>
@@ -651,9 +653,16 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     for (const wk of league.weeks) {
       if (wk.locked) continue;
       const pw = P.proj[String(wk.week)]; if (!pw) continue;
+      // Kickoffs come as full timestamps (exact) or, when only the date is known, a plain YYYY-MM-DD (US date).
+      // Date-only: nothing on that date starts before 13:30 UTC, and everything is over by 08:00 UTC two days on.
       const kick = (P.kickoffs || {})[String(wk.week)] || {};
-      const kickMs = {}; for (const t in kick) { const v = Date.parse(kick[t]); if (!isNaN(v)) kickMs[t] = v; }
-      const started = Object.values(kickMs).some(k => k <= now);
+      const kickT = {};
+      for (const t in kick) {
+        const v = String(kick[t]);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(v)) { const d0 = Date.parse(v + 'T00:00:00Z'); if (!isNaN(d0)) kickT[t] = { start: d0 + 13.5 * 3600e3, end: d0 + 32 * 3600e3, exact: false }; }
+        else { const k = Date.parse(v); if (!isNaN(k)) kickT[t] = { start: k, end: k + GAME_MS, exact: true }; }
+      }
+      const started = Object.values(kickT).some(k => k.start <= now);
       const live = wk.week === cur && started;
       const lam = Math.min(0.5, 0.1 * Math.max(0, wk.week - cur));
       const m = { mu: [], sd: [], live, detail: [] };
@@ -665,23 +674,28 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
         let starters;
         if (live && lu && lu.starters && lu.starters.length) starters = lu.starters.filter(s => s && String(s) !== '0').map(pid => ({ pid: String(pid), pts: projOf(pid), slot: '' }));
         else starters = optimalLineup(slots, t.players || [], projOf, posOf).starters;
-        let mean = 0, projSum = 0, remSum = 0, actual = 0, finished = 0;
+        let mean = 0, projSum = 0, remSum = 0, actual = 0, nStarted = 0, nDone = 0;
         for (const s of starters) {
-          const info = P.players[s.pid] || {}; const k = kickMs[info.team];
-          let r = 1, pts = 0;
-          if (live && k != null && k <= now) {
-            const frac = (now - k) / GAME_MS; r = frac >= 1 ? 0 : Math.max(0, 1 - frac);
-            pts = Number(lu && lu.pts && lu.pts[s.pid]) || 0;
-            if (r === 0) finished++;
+          const info = P.players[s.pid] || {}; const k = kickT[info.team];
+          const pts = live ? (Number(lu && lu.pts && lu.pts[s.pid]) || 0) : 0;
+          let c, rem;
+          if (!live || !k || now < k.start) { c = s.pts; rem = s.pts; }                  // not started (or game time unknown)
+          else if (now >= k.end) { c = pts; rem = 0; nStarted++; nDone++; }               // finished: actual points
+          else if (k.exact) {                                                             // in progress, known kickoff
+            const r = Math.max(0, 1 - (now - k.start) / GAME_MS);
+            c = pts + s.pts * r; rem = s.pts * r; nStarted++;
+          } else {                                                                        // in progress window, time unknown:
+            c = Math.max(pts, s.pts); rem = Math.max(0, s.pts - pts);                     // keep projection until outscored
+            if (pts > 0) nStarted++;
           }
-          mean += pts + s.pts * r; projSum += s.pts; remSum += s.pts * r; actual += pts;
+          mean += c; projSum += s.pts; remSum += rem; actual += pts;
         }
-        const remFrac = projSum > 0 ? remSum / projSum : (live && starters.length && finished === starters.length ? 0 : 1);
+        const remFrac = projSum > 0 ? Math.min(1, remSum / projSum) : (starters.length && nDone === starters.length ? 0 : 1);
         const projMean = mean + bias * remFrac;
         const mu = (1 - lam) * projMean + lam * base.model[i].mu;
         const sd = Math.sqrt(((1 - lam) * sigma * sigma + lam * base.sd * base.sd) * remFrac);
         m.mu.push(mu); m.sd.push(sd);
-        m.detail.push({ proj: projSum, actual, remFrac, mu, starters, setLineup: !!(live && lu && lu.starters && lu.starters.length) });
+        m.detail.push({ proj: projSum, actual, remFrac, mu, starters, setLineup: !!(live && lu && lu.starters && lu.starters.length), started: nStarted, done: nDone, n: starters.length });
       }
       models[wk.week] = m;
     }
@@ -729,9 +743,12 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   'use strict';
   const E = window.Engine;
   const DEFAULT_LEAGUE = '1325795538116833280';
+  // Set to false to ignore projections.json and use season scoring averages for every win chance.
+  const USE_PROJECTIONS = true;
 
   // Manager names. Matched on load by Sleeper user id first, then Sleeper username, then current team name.
-  // To lock a manager to an account permanently, paste the user_id from Advanced > Manager mapping > "Copy locked config".
+  // The Manager mapping table is hidden; visit the site with ?admin=1 to see it under Advanced, and use
+  // "Copy locked config" there to regenerate this list (e.g. a new manager or a new season's league).
   const MANAGERS = [
     { manager: "Benji", user_id: "330570686437261312", username: "BenjiK", team: "Sydney Sideliners" },
     { manager: "Seb", user_id: "330686532409131008", username: "sebh003", team: "Out the mud" },
@@ -753,6 +770,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     m = MANAGERS.find(x => x.team && norm(x.team) === norm(teamName)); if (m) return { m, by: 'team name' };
     return null;
   }
+  const ADMIN = new URLSearchParams(location.search).get('admin') === '1';
   let nameMode = 'team';
   try { nameMode = localStorage.getItem('ffpo:names') === 'mgr' ? 'mgr' : 'team'; } catch (e) { /* ignore */ }
   const API = 'https://api.sleeper.app/v1';
@@ -802,6 +820,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
 
   async function loadProjections() {
     models = {}; projInfo = null;
+    if (!USE_PROJECTIONS) return;
     try {
       const r = await fetch(`projections.json?v=${Math.floor(Date.now() / 600000)}`, { cache: 'no-store' });
       if (!r.ok) throw new Error(`projections.json ${r.status}`);
@@ -939,13 +958,13 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   function liveTag(i, week) {
     const m = models[week]; if (!m || !m.live) return '';
     const d = m.detail[i];
-    return d.remFrac <= 0 ? ' <b class="done">final</b>' : d.remFrac < 1 ? ' <b class="live">live</b>' : '';
+    return d.n && d.done === d.n ? ' <b class="done">final</b>' : d.started ? ' <b class="live">live</b>' : '';
   }
   function projTitle(i, week) {
     const m = models[week]; if (!m) return 'Season scoring average (projections unavailable)';
     const d = m.detail[i];
     const names = d.starters.map(s => (projPlayers[s.pid] && projPlayers[s.pid].name) || s.pid).join(', ');
-    if (m.live) return `${d.setLineup ? 'Set lineup' : 'Optimal lineup'}: ${d.actual.toFixed(1)} scored so far, ${Math.round(d.remFrac * 100)}% of projected points still to come (${names})`;
+    if (m.live) return `${d.setLineup ? 'Set lineup' : 'Optimal lineup'}: ${d.actual.toFixed(1)} scored so far, ${d.done} of ${d.n} starters finished, ${Math.round(d.remFrac * 100)}% of projected points still to come (${names})`;
     return `Optimal lineup from current roster, projected ${d.proj.toFixed(1)}${week > league.cur ? ', blended toward season average for a future week' : ''}`;
   }
 
@@ -1081,7 +1100,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
         <td class="num"><input type="number" step="1" min="0" data-kind="pf" data-i="${i}" value="${pfO != null ? pfO : ''}" placeholder="${pfProj.toFixed(0)}" class="${pfO != null ? 'over' : ''}" aria-label="Override remaining points for ${esc(N(i))}"></td></tr>`;
     }
     $('advTable').innerHTML = html + '</tbody>';
-    renderManagerMap();
+    if (ADMIN) { $('mgrSection').classList.remove('hidden'); renderManagerMap(); }
     $('advTable').querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => {
       const i = Number(inp.dataset.i); const tgt = overrides[inp.dataset.kind];
       if (inp.value === '' || isNaN(Number(inp.value))) delete tgt[i]; else tgt[i] = Number(inp.value);
