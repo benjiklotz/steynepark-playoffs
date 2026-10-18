@@ -213,3 +213,16 @@ console.log('PROJECTION TESTS PASSED');
   console.log('9 date-only kickoffs ok');
 }
 console.log('DATE-ONLY TESTS PASSED');
+
+// ---- 10. average finish: every position 1-12 used once per sim, so averages sum to 78 ----
+{
+  const s10 = E.simulate(L, base, {}, {}, 2000, 3);
+  const tot = s10.reduce((x, y) => x + y.avgFinish, 0);
+  assert.ok(Math.abs(tot - 78) < 1e-6, 'finishes sum to 1+...+12');
+  s10.forEach(t => assert.ok(t.avgFinish >= 1 && t.avgFinish <= 12));
+  // a near-certain playoff team should finish ahead, on average, of a near-certain miss
+  const hi = s10.reduce((b, t, i) => t.playoffs > s10[b].playoffs ? i : b, 0), lo = s10.reduce((b, t, i) => t.playoffs < s10[b].playoffs ? i : b, 0);
+  assert.ok(s10[hi].avgFinish < s10[lo].avgFinish);
+  console.log('10 avg finish ok', s10.map(t => t.avgFinish.toFixed(1)).join(' '));
+}
+console.log('AVG FINISH TESTS PASSED');

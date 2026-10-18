@@ -583,7 +583,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
 
   function simulate(league, base, picks, overrides, nSims, wildcards, models) {
     const n = league.nTeams;
-    const tally = Array.from({ length: n }, () => ({ playoffs: 0, div: 0, seeds: new Array(7).fill(0), seedSum: 0 }));
+    const tally = Array.from({ length: n }, () => ({ playoffs: 0, div: 0, seeds: new Array(7).fill(0), seedSum: 0, finishSum: 0 }));
     const future = league.weeks.filter(w => !w.locked);
     const ov = overrides || {};
     const sd = base.sd;
@@ -609,13 +609,15 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       }
       const r = seedPlayoffs(league, s, { quiet: true, wildcards });
       for (const d in r.divWinners) tally[r.divWinners[d].winner].div++;
-      for (const sd of r.seeds) { const t = tally[sd.team]; t.playoffs++; t.seeds[sd.seed]++; t.seedSum += sd.seed; }
+      for (const sd of r.seeds) { const t = tally[sd.team]; t.playoffs++; t.seeds[sd.seed]++; t.seedSum += sd.seed; t.finishSum += sd.seed; }
+      r.out.forEach((team, k) => { tally[team].finishSum += r.seeds.length + 1 + k; }); // 7th-12th: non-playoff teams by record, then points
     }
     return tally.map(t => ({
       playoffs: t.playoffs / nSims, div: t.div / nSims,
       seeds: t.seeds.map(x => x / nSims),
       bye: (t.seeds[1] + t.seeds[2]) / nSims,
-      avgSeed: t.playoffs ? t.seedSum / t.playoffs : null,
+      avgSeed: t.playoffs ? t.seedSum / t.playoffs : null, // average seed when making the playoffs
+      avgFinish: t.finishSum / nSims,                      // average finishing position 1-12 across all simulations
     }));
   }
 
@@ -1131,12 +1133,12 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   }
   function renderProb() {
     if (!sim || !liveProb) { $('probTable').innerHTML = `<tbody><tr><td class="muted small">Turn on Live to simulate the unpicked games.</td></tr></tbody>`; return; }
-    const order = league.teams.map((t, i) => i).sort((a, b) => sim[b].playoffs - sim[a].playoffs || sim[b].div - sim[a].div || sim[b].bye - sim[a].bye);
+    const order = league.teams.map((t, i) => i).sort((a, b) => sim[b].playoffs - sim[a].playoffs || sim[a].avgFinish - sim[b].avgFinish);
     const cell = (p, cls) => `<td class="num barcell"><i style="width:${Math.round(p * 100)}%"></i><b class="${cls || ''}">${pctS(p)}</b></td>`;
-    let html = '<thead><tr><th>Team</th><th class="num">Playoffs</th><th class="num">Division</th><th class="num">Bye (1–2)</th><th class="num">#1 seed</th><th class="num">Avg seed</th></tr></thead><tbody>';
+    let html = '<thead><tr><th>Team</th><th class="num">Playoffs</th><th class="num">Division</th><th class="num">Bye (1–2)</th><th class="num">#1 seed</th><th class="num" title="Average finishing position (1–12) across all simulations. 1–6 are playoff seeds; 7–12 are the non-playoff teams ordered by record, then points for.">Avg finish</th></tr></thead><tbody>';
     for (const i of order) {
       const p = sim[i]; const cls = p.playoffs >= 0.9995 ? 'clinch' : p.playoffs <= 0.0005 ? 'elim' : '';
-      html += `<tr><td class="teamcell">${esc(N(i))}</td>${cell(p.playoffs, cls)}${cell(p.div)}${cell(p.bye)}${cell(p.seeds[1])}<td class="num">${p.avgSeed ? p.avgSeed.toFixed(1) : '–'}</td></tr>`;
+      html += `<tr><td class="teamcell">${esc(N(i))}</td>${cell(p.playoffs, cls)}${cell(p.div)}${cell(p.bye)}${cell(p.seeds[1])}<td class="num" title="${p.avgSeed ? `Average seed when making the playoffs: ${p.avgSeed.toFixed(1)}` : 'Never makes the playoffs in these simulations'}">${p.avgFinish.toFixed(1)}</td></tr>`;
     }
     $('probTable').innerHTML = html + '</tbody>';
   }
