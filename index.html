@@ -223,12 +223,14 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
         <div class="pb adv">
           <p class="small" style="margin-bottom:10px">Fair Play is a team's record if it had played every other team every week (up to 11 wins a week). When a future game is picked, the default projection uses that team's own average Fair Play wins in weeks it won or lost this season, blended with the league average, so a team picked to win a lot is projected to pick up more than its share. Type a number to override a team's total Fair Play wins over its remaining weeks; leave blank to keep the projection. Points For works the same way.</p>
           <div style="overflow-x:auto"><table id="advTable"></table></div>
+          <div id="mgrSection" class="hidden">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 8px">
             <h2>Manager mapping</h2>
             <button class="btn sm" id="btnCopyMgr" type="button">Copy locked config</button>
           </div>
           <p class="small muted" id="mgrNote" style="margin-bottom:8px"></p>
           <div style="overflow-x:auto"><table id="mgrTable"></table></div>
+          </div>
         </div>
       </div>
     </div>
@@ -652,20 +654,21 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   const DEFAULT_LEAGUE = '1325795538116833280';
 
   // Manager names. Matched on load by Sleeper user id first, then Sleeper username, then current team name.
-  // To lock a manager to an account permanently, paste the user_id from Advanced > Manager mapping > "Copy locked config".
+  // The Manager mapping table is hidden; visit the site with ?admin=1 to see it under Advanced, and use
+  // "Copy locked config" there to regenerate this list (e.g. a new manager or a new season's league).
   const MANAGERS = [
-    { manager: 'Benji', team: 'Sydney Sideliners' },
-    { manager: 'Edmund', team: 'Kansas City Kickers' },
-    { manager: 'Jack', team: 'The Sampsonites' },
-    { manager: 'Ollie', team: 'The Bold Barbarians' },
-    { manager: 'Doc', team: 'Trash Stackers' },
-    { manager: 'Jacobsons', team: '2020 all stars' },
-    { manager: 'Jonathan', team: 'Trumpster' },
-    { manager: 'Chris', team: 'Duloc Donkeys' },
-    { manager: 'Gustav', team: 'Lane Cove Leviathans' },
-    { manager: 'Seb', team: 'Out the mud' },
-    { manager: 'Jack', team: 'JackBouvier' },
-    { manager: 'Shanas', team: 'The Golden Gods' },
+    { manager: "Benji", user_id: "330570686437261312", username: "BenjiK", team: "Sydney Sideliners" },
+    { manager: "Seb", user_id: "330686532409131008", username: "sebh003", team: "Out the mud" },
+    { manager: "Edmund", user_id: "330699663097221120", username: "EdmundKayHole", team: "Kansas City Kickers" },
+    { manager: "Chris", user_id: "429630707845844992", username: "ChristopherS", team: "Duloc Donkeys" },
+    { manager: "Jack", user_id: "593650644296982528", username: "JackBouvier", team: "JackBouvier" },
+    { manager: "Gustav", user_id: "1325795295778316288", username: "GustavSoerensen", team: "Lane Cove Leviathans" },
+    { manager: "Jack", user_id: "494707385227538432", username: "WillRed2002", team: "The Sampsonites" },
+    { manager: "Jonathan", user_id: "340658069404917760", username: "Trumpster", team: "Trumpster" },
+    { manager: "Ollie", user_id: "330933294352859136", username: "OLLIEKLOTZ", team: "The Bold Barbarians " },
+    { manager: "Doc", user_id: "341450768689156096", username: "DocKlotz", team: "Trash Stackers " },
+    { manager: "Shanas", user_id: "462170188024901632", username: "WillShanahan", team: "The Golden Gods" },
+    { manager: "Jacobsons", user_id: "866277765941428224", username: "benjyj02", team: "2020 all stars " },
   ];
   const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   function matchManager(userId, username, teamName) {
@@ -674,6 +677,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     m = MANAGERS.find(x => x.team && norm(x.team) === norm(teamName)); if (m) return { m, by: 'team name' };
     return null;
   }
+  const ADMIN = new URLSearchParams(location.search).get('admin') === '1';
   let nameMode = 'team';
   try { nameMode = localStorage.getItem('ffpo:names') === 'mgr' ? 'mgr' : 'team'; } catch (e) { /* ignore */ }
   const API = 'https://api.sleeper.app/v1';
@@ -957,7 +961,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
         <td class="num"><input type="number" step="1" min="0" data-kind="pf" data-i="${i}" value="${pfO != null ? pfO : ''}" placeholder="${pfProj.toFixed(0)}" class="${pfO != null ? 'over' : ''}" aria-label="Override remaining points for ${esc(N(i))}"></td></tr>`;
     }
     $('advTable').innerHTML = html + '</tbody>';
-    renderManagerMap();
+    if (ADMIN) { $('mgrSection').classList.remove('hidden'); renderManagerMap(); }
     $('advTable').querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => {
       const i = Number(inp.dataset.i); const tgt = overrides[inp.dataset.kind];
       if (inp.value === '' || isNaN(Number(inp.value))) delete tgt[i]; else tgt[i] = Number(inp.value);

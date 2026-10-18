@@ -1,6 +1,6 @@
-// Runs against the engine embedded in playoff-picture.html (same folder): node test.js
+// Runs against the engine embedded in index.html (same folder): node test.js
 const fs = require('fs'), path = require('path');
-const html = fs.readFileSync(path.join(__dirname, 'playoff-picture.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 new Function(html.match(/<script>([\s\S]*?)<\/script>/)[1])();
 const E = globalThis.Engine;
 const assert = require('assert');
