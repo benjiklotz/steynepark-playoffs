@@ -6,102 +6,122 @@
 <title>Playoff Picture</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #F4F3EE; --surface: #FFFFFF; --surface-2: #ECEAE2; --ink: #182236; --muted: #5F687B; --line: #D7D4CA;
-  --navy: #1B2A4A; --navy-ink: #FFFFFF; --gold: #D9A400; --gold-soft: #FBF0C7; --gold-ink: #5B4500;
-  --win: #1D7A4C; --win-soft: #DDF2E6; --loss: #B23434; --loss-soft: #F8E1E1; --wild: #3B5998; --wild-soft: #E2E8F6;
-  --focus: #2F6FED;
+  --paper: #FBFBFA; --panel: #FFFFFF; --panel-2: #F1F0EC; --ink: #121A2B; --ink-2: #4B5468; --muted: #6B7385; --rule: #E2E8F0; --rule-2: #C9CFD9;
+  --navy: #14213D; --on-navy: #F7F5EE; --gold: #B8860B; --gold-soft: #F6EFD8; --gold-ink: #5A4300;
+  --wild: #2F4A7A; --wild-soft: #E6ECF6;
+  --win: #1D6B45; --win-soft: #E0F0E7; --loss: #A52F2F; --loss-soft: #F6E3E3;
+  --focus: #1D4ED8;
+  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', 'Helvetica Neue', sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Segoe UI Variable', 'Helvetica Neue', sans-serif;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   color-scheme: dark;
-  --bg: #0F141D; --surface: #171E2B; --surface-2: #202939; --ink: #ECEFF4; --muted: #98A2B6; --line: #2A3447;
-  --navy: #2A3B63; --navy-ink: #FFFFFF; --gold: #E8B71E; --gold-soft: #3A2F0E; --gold-ink: #F7DC87;
-  --win: #4CC38A; --win-soft: #15311F; --loss: #E96C6C; --loss-soft: #3A1A1A; --wild: #8FA8E6; --wild-soft: #1C2742;
+  --paper: #0F131B; --panel: #151B26; --panel-2: #1D2532; --ink: #ECEEF2; --ink-2: #B8BFCC; --muted: #8E97A8; --rule: #273040; --rule-2: #3A4556;
+  --navy: #0B1120; --on-navy: #F3F1EA; --gold: #D9A62A; --gold-soft: #2E2510; --gold-ink: #F0D58A;
+  --wild: #9DB3E0; --wild-soft: #1A2538;
+  --win: #4FC58A; --win-soft: #14301F; --loss: #E57373; --loss-soft: #3A1818;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
 } }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0F141D; --surface: #171E2B; --surface-2: #202939; --ink: #ECEFF4; --muted: #98A2B6; --line: #2A3447;
-  --navy: #2A3B63; --navy-ink: #FFFFFF; --gold: #E8B71E; --gold-soft: #3A2F0E; --gold-ink: #F7DC87;
-  --win: #4CC38A; --win-soft: #15311F; --loss: #E96C6C; --loss-soft: #3A1A1A; --wild: #8FA8E6; --wild-soft: #1C2742;
+  --paper: #0F131B; --panel: #151B26; --panel-2: #1D2532; --ink: #ECEEF2; --ink-2: #B8BFCC; --muted: #8E97A8; --rule: #273040; --rule-2: #3A4556;
+  --navy: #0B1120; --on-navy: #F3F1EA; --gold: #D9A62A; --gold-soft: #2E2510; --gold-ink: #F0D58A;
+  --wild: #9DB3E0; --wild-soft: #1A2538;
+  --win: #4FC58A; --win-soft: #14301F; --loss: #E57373; --loss-soft: #3A1818;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
 }
 html { scroll-padding-top: env(safe-area-inset-top, 0px); }
 *, *::before, *::after { box-sizing: inherit; }
 html, body { margin: 0; }
 body {
-  background: var(--bg); color: var(--ink);
-  font-family: 'Barlow', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; line-height: 1.45;
-  font-variant-numeric: tabular-nums;
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: 14px; line-height: 1.45;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  -webkit-font-smoothing: antialiased;
 }
 button { font: inherit; color: inherit; cursor: pointer; }
-button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-input, select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
-h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
-h1 { font-size: 26px; line-height: 1.1; }
-h2 { font-size: 17px; }
-h3 { font-size: 14px; color: var(--muted); font-weight: 600; }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+input, select, textarea { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule-2); border-radius: 2px; padding: 6px 9px; }
+textarea { font-family: var(--font-body); font-size: 14px; line-height: 1.5; width: 100%; resize: vertical; }
+h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+h1 { font-size: 24px; }
+h2 { font-size: 16px; }
+h3 { font-size: 13px; font-family: var(--font-body); font-weight: 600; letter-spacing: .01em; color: var(--ink-2); }
 p { margin: 0; }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
-.cond { font-family: 'Barlow Condensed', 'Barlow', 'Arial Narrow', Arial, sans-serif; }
+.num { font-variant-numeric: tabular-nums; }
 
-header.top {
-  background: var(--navy); color: var(--navy-ink);
-  padding: 18px 20px 16px;
-}
-header.top .wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; }
-header.top .status { opacity: .82; font-size: 14px; margin-top: 4px; }
-header.top .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 7px 12px; font-weight: 500; font-size: 14px; }
-.btn:hover { background: var(--surface-2); }
-.btn.primary { background: var(--gold); border-color: var(--gold); color: #1a1400; font-weight: 600; }
-.btn.primary:hover { filter: brightness(1.05); }
-.btn.ghost { background: transparent; color: inherit; border-color: rgba(255,255,255,.35); }
-.btn.ghost:hover { background: rgba(255,255,255,.1); }
+/* masthead */
+header.top { background: var(--navy); color: var(--on-navy); padding: 16px 20px 14px; overflow-wrap: anywhere; }
+header.top .wrap { max-width: 1320px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: flex-end; justify-content: space-between; }
+header.top .status { opacity: .78; font-size: 13px; margin-top: 4px; max-width: 80ch; }
+header.top .actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+/* buttons */
+.btn { border: 1px solid var(--ink); background: var(--panel); color: var(--ink); border-radius: 2px; padding: 6px 11px; font-weight: 600; font-size: 13px; line-height: 1.2; transition: background-color .15s, color .15s, transform .15s; }
+.btn:hover { background: var(--ink); color: var(--paper); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn.primary:hover { background: var(--ink-2); border-color: var(--ink-2); }
+.btn.ghost { background: transparent; color: var(--on-navy); border-color: rgba(247,245,238,.45); }
+.btn.ghost:hover { background: var(--on-navy); color: var(--navy); border-color: var(--on-navy); }
+.btn.sm { padding: 4px 9px; font-size: 12px; }
 .btn:disabled { opacity: .4; cursor: default; }
-.btn.ghost:disabled:hover { background: transparent; }
-.btn.sm { padding: 4px 9px; font-size: 13px; }
-.btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn:disabled:hover { background: transparent; color: inherit; transform: none; }
+.btn.ghost:disabled:hover { color: var(--on-navy); border-color: rgba(247,245,238,.45); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 
-main { max-width: 1240px; margin: 0 auto; padding: 18px 20px 60px; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 6fr); gap: 22px; align-items: start; }
-@media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); padding: 14px 12px 50px; } }
+.seg { display: inline-flex; border: 1px solid var(--ink); border-radius: 2px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 5px 11px; font-weight: 600; font-size: 13px; transition: background-color .15s, color .15s; }
+.seg button + button { border-left: 1px solid var(--ink); }
+.seg button:hover { background: var(--panel-2); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg.light { border-color: rgba(247,245,238,.45); }
+.seg.light button { font-size: 12px; padding: 4px 9px; color: var(--on-navy); }
+.seg.light button + button { border-left-color: rgba(247,245,238,.45); }
+.seg.light button:hover { background: rgba(247,245,238,.12); }
+.seg.light button[aria-pressed="true"] { background: var(--on-navy); color: var(--navy); }
 
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-.panel > .ph { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-.panel > .pb { padding: 12px 14px; }
+/* layout */
+main { max-width: 1320px; margin: 0 auto; padding: 18px 20px 60px; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); padding: 14px 12px 50px; gap: 20px; } header.top { padding: 14px 12px 12px; } }
 
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.seg button { border: 0; background: transparent; padding: 6px 12px; font-weight: 500; }
-.seg button + button { border-left: 1px solid var(--line); }
-.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-.seg.light { border-color: rgba(255,255,255,.35); }
-.seg.light button { font-size: 13px; padding: 5px 10px; }
-.seg.light button + button { border-left-color: rgba(255,255,255,.35); }
-.seg.light button[aria-pressed="true"] { background: var(--gold); color: #1a1400; }
-.adv tr.unmatched td { background: var(--loss-soft); }
+.panel { background: var(--panel); border: 1px solid var(--rule-2); border-radius: 2px; }
+.panel > .ph { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--rule); }
+.panel > .pb { padding: 12px 14px 14px; }
+@media (max-width: 600px) { .panel > .ph { padding: 10px 12px; } .panel > .pb { padding: 12px; } }
 
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 14px 0; }
-.tabs button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 4px 11px; font-size: 13px; font-weight: 500; }
-.tabs button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1a1400; font-weight: 600; }
-.tabs button .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--win); margin-left: 6px; vertical-align: middle; }
+.tabs { display: flex; gap: 0; flex-wrap: wrap; padding: 10px 14px 0; }
+.tabs button { border: 1px solid var(--rule-2); border-left-width: 0; background: transparent; padding: 4px 10px; font-size: 12px; font-weight: 600; transition: background-color .15s, color .15s; }
+.tabs button:first-child { border-left-width: 1px; border-radius: 2px 0 0 2px; }
+.tabs button:last-child { border-radius: 0 2px 2px 0; }
+.tabs button:hover { background: var(--panel-2); }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tabs button .tick { margin-left: 5px; font-size: 11px; color: var(--win); }
+.tabs button[aria-pressed="true"] .tick { color: var(--paper); }
+@media (max-width: 600px) { .tabs { padding: 10px 12px 0; } }
 
-.matchups { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; }
-.mu { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 6px; }
+/* matchups */
+.matchups { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px 14px; }
+@media (max-width: 600px) { .matchups { padding: 12px; } }
+.mtools { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 4px; }
+.mu { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 8px; }
 .mu > * { min-width: 0; }
-.mu .vs { align-self: center; color: var(--muted); font-size: 12px; width: 28px; text-align: center; }
-.side {
-  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--surface);
-  display: flex; flex-direction: column; gap: 2px; text-align: left; min-height: 56px;
-}
+.mu .vs { align-self: center; color: var(--muted); font-size: 12px; width: 30px; text-align: center; }
+.side { border: 1px solid var(--rule-2); border-radius: 2px; padding: 8px 10px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; text-align: left; min-height: 52px; transition: border-color .15s, background-color .15s; }
 .side.right { text-align: right; align-items: flex-end; }
-.side .nm { font-weight: 600; line-height: 1.2; }
-.side .meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 8px; }
+.side .nm { font-weight: 700; line-height: 1.2; }
+.side .meta { font-size: 11.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 1px 8px; }
 .side.right .meta { justify-content: flex-end; }
-.side .bar { height: 3px; border-radius: 2px; background: var(--surface-2); width: 100%; margin-top: 4px; overflow: hidden; }
-.side .bar i { display: block; height: 100%; background: var(--muted); }
+.side .bar { height: 2px; background: var(--panel-2); width: 100%; margin-top: 4px; overflow: hidden; }
+.side .bar i { display: block; height: 100%; background: var(--ink-2); }
 .side.right .bar i { margin-left: auto; }
 .side:hover { border-color: var(--ink); }
 .side.win { background: var(--win-soft); border-color: var(--win); }
@@ -109,74 +129,171 @@ main { max-width: 1240px; margin: 0 auto; padding: 18px 20px 60px; display: grid
 .side.lose { opacity: .55; }
 .side.lose .nm::after { content: ' L'; color: var(--loss); font-weight: 700; }
 .side.final { cursor: default; }
-.side.final:hover { border-color: var(--line); }
-.side .score { font-weight: 600; }
-b.live { color: var(--win); font-weight: 700; font-size: 11px; letter-spacing: .02em; }
-b.done { color: var(--muted); font-weight: 600; font-size: 11px; }
+.side.final:hover { border-color: var(--rule-2); }
+.side .score { font-weight: 600; color: var(--ink); }
+b.live { color: var(--win); font-weight: 700; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+b.done { color: var(--muted); font-weight: 700; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
 
-.teamgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; padding: 12px 14px 0; }
-.teamgrid button { border: 1px solid var(--line); background: transparent; border-radius: 8px; padding: 7px 9px; text-align: left; font-weight: 500; line-height: 1.2; }
-.teamgrid button small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
-.teamgrid button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+/* fair play order */
+details.fpo { border-top: 1px solid var(--rule); margin-top: 8px; padding-top: 8px; }
+details.fpo summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-weight: 600; }
+details.fpo summary::-webkit-details-marker { display: none; }
+details.fpo summary .ttl::before { content: '+'; font-family: var(--font-display); font-size: 16px; margin-right: 8px; color: var(--muted); }
+details.fpo[open] summary .ttl::before { content: '–'; }
+details.fpo summary .hint { font-weight: 400; font-size: 13px; color: var(--muted); }
+.fpo .fpnote { font-size: 12px; color: var(--muted); margin: 8px 0 8px; max-width: 80ch; }
+.fpo .fptools { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 8px; }
+.fplist { display: flex; flex-direction: column; border-top: 1px solid var(--rule-2); user-select: none; }
+.fprow { display: grid; grid-template-columns: 30px 24px minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 5px 4px 5px 0; border-bottom: 1px solid var(--rule); background: var(--panel); touch-action: none; position: relative; }
+.fprow .fpw { font-family: var(--font-display); font-weight: 700; font-size: 15px; text-align: right; }
+.fprow .grip { color: var(--rule-2); cursor: grab; text-align: center; font-size: 16px; line-height: 1; letter-spacing: -2px; }
+.fprow .grip:active { cursor: grabbing; }
+.fprow .tn { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fprow .tn small { color: var(--muted); font-weight: 400; margin-left: 8px; }
+.fprow .tn b.wl { font-weight: 700; margin-left: 6px; }
+.fprow .tn b.live, .fprow .tn b.done { margin-left: 8px; }
+.fprow .proj { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.fprow .ud { display: inline-flex; border: 1px solid var(--rule-2); border-radius: 2px; overflow: hidden; }
+.fprow .ud button { border: 0; background: transparent; padding: 2px 7px; font-size: 11px; line-height: 1.4; }
+.fprow .ud button + button { border-left: 1px solid var(--rule-2); }
+.fprow .ud button:hover { background: var(--ink); color: var(--paper); }
+@media (max-width: 640px) {
+  .fprow { grid-template-columns: 32px 22px minmax(0, 1fr) auto; grid-template-rows: auto auto; row-gap: 2px; }
+  .fprow .fpw, .fprow .grip, .fprow .ud { grid-row: 1 / span 2; }
+  .fprow .tn { grid-column: 3; grid-row: 1; white-space: normal; }
+  .fprow .proj { grid-column: 3; grid-row: 2; font-size: 12px; }
+}
+.fprow.dragging { opacity: .35; }
+.fprow.over { box-shadow: inset 0 2px 0 var(--ink); }
+.fprow.over-below { box-shadow: inset 0 -2px 0 var(--ink); }
+.fpo.touched summary .hint { color: var(--gold-ink); }
+
+/* team view */
+.teamgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0; padding: 12px 14px 0; border-collapse: collapse; }
+.teamgrid button { border: 1px solid var(--rule-2); margin: 0 -1px -1px 0; background: transparent; padding: 7px 10px; text-align: left; font-weight: 600; line-height: 1.25; transition: background-color .15s, color .15s; }
+.teamgrid button small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; margin-top: 2px; }
+.teamgrid button:hover { background: var(--panel-2); }
+.teamgrid button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); position: relative; z-index: 1; }
 .teamgrid button[aria-pressed="true"] small { color: inherit; opacity: .7; }
-.tgames { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
-.tg { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.tgames { padding: 12px 14px 14px; display: flex; flex-direction: column; }
+.tg { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+.tg:first-child { border-top: 1px solid var(--rule-2); }
 .tg .wk { color: var(--muted); font-size: 13px; }
-.tg .opp { font-weight: 500; }
-.tg .opp small { color: var(--muted); font-weight: 400; margin-left: 6px; }
-.tg .wl { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
-.tg .wl button { border: 0; background: transparent; padding: 5px 12px; font-weight: 600; }
-.tg .wl button + button { border-left: 1px solid var(--line); }
+.tg .opp { font-weight: 600; }
+.tg .opp small { color: var(--muted); font-weight: 400; margin-left: 8px; }
+.tg .wl { display: inline-flex; border: 1px solid var(--rule-2); border-radius: 2px; overflow: hidden; }
+.tg .wl button { border: 0; background: transparent; padding: 4px 12px; font-weight: 700; transition: background-color .15s, color .15s; }
+.tg .wl button + button { border-left: 1px solid var(--rule-2); }
+.tg .wl button:hover { background: var(--panel-2); }
 .tg .wl button.on-w { background: var(--win); color: #fff; }
 .tg .wl button.on-l { background: var(--loss); color: #fff; }
-.tg.final .wl span { padding: 5px 10px; font-weight: 600; }
+.tg.final .wl span { padding: 6px 12px; font-weight: 700; }
+@media (max-width: 600px) { .teamgrid, .tgames { padding-left: 12px; padding-right: 12px; } }
 
-.adv table, .std table, .prob table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.adv th, .std th, .prob th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-.adv td, .std td, .prob td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-.adv td.num, .std td.num, .prob td.num, .adv th.num, .std th.num, .prob th.num { text-align: right; }
-.adv input { width: 72px; text-align: right; padding: 3px 6px; }
-.adv .hint { font-size: 12px; color: var(--muted); }
+/* tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11.5px; padding: 6px 8px; border-bottom: 1px solid var(--rule-2); white-space: nowrap; }
+td { padding: 5px 8px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+th.num, td.num { text-align: right; }
+td.teamcell { font-weight: 600; }
+.adv input { width: 76px; text-align: right; padding: 4px 7px; }
+.adv .hint { font-size: 12px; color: var(--muted); white-space: nowrap; }
 .adv .over { border-color: var(--gold); background: var(--gold-soft); }
+.adv tr.unmatched td { background: var(--loss-soft); }
+.adv { padding: 12px 14px 18px; }
+@media (max-width: 600px) { .adv { padding: 12px; } }
+.adv p.lead { font-size: 13px; color: var(--ink-2); max-width: 80ch; margin-bottom: 12px; }
+.adv .sect { margin-top: 28px; }
+.adv .sect .sh { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 
-.board { display: flex; flex-direction: column; gap: 16px; position: sticky; top: calc(14px + env(safe-area-inset-top, 0px)); }
+/* seeds board */
+.board { display: flex; flex-direction: column; gap: 18px; position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); }
 @media (max-width: 900px) { .board { position: static; } }
-.seeds { display: grid; grid-template-columns: 1fr; gap: 8px; }
-.seed { display: grid; grid-template-columns: 48px minmax(0, 1fr); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
-.seed .no { font-size: 34px; line-height: 1; font-weight: 700; display: flex; align-items: center; justify-content: center; background: var(--gold); color: #1a1400; }
-.seed.wild .no { background: var(--wild-soft); color: var(--wild); }
-.seed .body { padding: 9px 12px 8px; min-width: 0; }
-.seed .nm { font-weight: 700; font-size: 17px; line-height: 1.15; display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-.seed .nm .pct { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
-.seed .meta { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 2px; }
-.seed .tag { font-size: 12px; font-weight: 600; color: var(--gold-ink); background: var(--gold-soft); border-radius: 4px; padding: 1px 6px; }
-.seed.wild .tag { color: var(--wild); background: var(--wild-soft); }
-details.how { margin-top: 6px; font-size: 13px; }
-details.how summary { cursor: pointer; color: var(--muted); font-weight: 500; list-style: none; }
-details.how summary::before { content: '▸ '; }
-details.how[open] summary::before { content: '▾ '; }
-details.how ol { margin: 6px 0 0; padding-left: 18px; color: var(--ink); }
+.seeds { display: flex; flex-direction: column; border-top: 1px solid var(--ink); }
+.seed { display: grid; grid-template-columns: 44px minmax(0, 1fr); border-bottom: 1px solid var(--rule-2); background: var(--panel); }
+.seed .no { font-family: var(--font-display); font-size: 24px; line-height: 1; font-weight: 700; letter-spacing: -0.03em; display: flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); }
+.seed.wild .no { background: var(--panel); color: var(--ink); border-right: 1px solid var(--rule-2); }
+.seed .body { padding: 8px 12px 7px; min-width: 0; }
+.seed .nm { font-weight: 700; font-size: 15px; line-height: 1.2; display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.seed .nm .pct { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.seed .meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 2px; }
+.seed .tag { font-weight: 700; color: var(--gold-ink); }
+.seed.wild .tag { color: var(--wild); }
+details.how { margin-top: 5px; font-size: 12.5px; }
+details.how summary { cursor: pointer; color: var(--muted); font-weight: 600; list-style: none; }
+details.how summary::-webkit-details-marker { display: none; }
+details.how summary::before { content: '+ '; }
+details.how[open] summary::before { content: '– '; }
+details.how h4 { margin: 8px 0 2px; font-size: 11.5px; font-weight: 700; letter-spacing: .02em; color: var(--ink-2); }
+details.how ol { margin: 4px 0 0; padding-left: 18px; color: var(--ink); }
 details.how li { margin: 3px 0; }
-.outlist { display: flex; flex-wrap: wrap; gap: 6px; }
-.outlist span { border: 1px dashed var(--line); border-radius: 999px; padding: 3px 10px; font-size: 13px; color: var(--muted); }
+details.outsideD { margin-top: 14px; }
+details.outsideD > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 6px 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule-2); }
+details.outsideD > summary::-webkit-details-marker { display: none; }
+details.outsideD > summary h3::before { content: '+ '; color: var(--muted); }
+details.outsideD[open] > summary h3::before { content: '– '; }
+details.outsideD > summary h3 { white-space: nowrap; }
+details.outsideD > summary .hint { font-size: 12px; color: var(--muted); flex: 1; text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+details.outsideD[open] > summary .hint { display: none; }
+.outside .orow { display: grid; grid-template-columns: 44px minmax(0, 1fr); border-bottom: 1px solid var(--rule); }
+.outside .orow .no { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+.outside .orow .body { padding: 7px 12px 6px; min-width: 0; }
+.outside .orow .nm { font-weight: 600; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.outside .orow .nm .pct { font-size: 12px; font-weight: 600; color: var(--muted); }
+.outside .orow .meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
 
 .prob .barcell { position: relative; }
-.prob .barcell i { position: absolute; left: 0; top: 50%; height: 60%; transform: translateY(-50%); background: var(--win-soft); z-index: 0; border-radius: 3px; }
+.prob .barcell i { position: absolute; left: 0; top: 50%; height: 60%; transform: translateY(-50%); background: var(--win-soft); z-index: 0; }
 .prob .barcell b { position: relative; z-index: 1; font-weight: 600; }
 .prob .clinch { color: var(--win); font-weight: 700; }
 .prob .elim { color: var(--loss); font-weight: 700; }
-.std .divname { font-weight: 700; padding: 10px 8px 4px; font-size: 13px; }
+.std .divname { font-family: var(--font-display); font-size: 14px; font-weight: 700; padding: 12px 8px 4px; }
 .std tr.champ td:first-child::before { content: '★ '; color: var(--gold); }
-.std td.teamcell { font-weight: 500; }
 
-.notice { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+/* tracker */
+.tracker { padding: 12px 14px 18px; }
+@media (max-width: 600px) { .tracker { padding: 12px; } }
+.tracker .lead { font-size: 13px; color: var(--ink-2); max-width: 80ch; margin-bottom: 10px; }
+.tracker .ctrl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 14px 0 6px; }
+.tracker h2 { margin-top: 8px; }
+.tracker .legend { display: flex; flex-wrap: wrap; gap: 0; border: 1px solid var(--rule-2); border-radius: 2px; overflow: hidden; margin: 6px 0 10px; }
+.tracker .legend button { border: 0; border-right: 1px solid var(--rule); background: transparent; padding: 4px 9px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 7px; color: var(--ink-2); transition: background-color .15s; }
+.tracker .legend button:last-child { border-right: 0; }
+.tracker .legend button:hover { background: var(--panel-2); }
+.tracker .legend button .sw { width: 10px; height: 10px; border-radius: 2px; background: var(--rule-2); }
+.tracker .legend button[aria-pressed="true"] { color: var(--ink); background: var(--panel-2); }
+.viz { width: 100%; height: auto; display: block; font-family: var(--font-body); }
+.viz .grid line { stroke: var(--rule); stroke-width: 1; }
+.viz .axis text { fill: var(--muted); font-size: 11px; }
+.viz .ln { fill: none; stroke: var(--rule-2); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.viz .ln.hi { stroke-width: 2.5; }
+.viz .lbl { font-size: 11px; fill: var(--muted); font-weight: 600; paint-order: stroke; stroke: var(--panel); stroke-width: 3px; stroke-linejoin: round; }
+.viz .lbl.hi { fill: var(--ink); }
+.viz .dot { fill: var(--panel); stroke-width: 2; }
+.viz .dot.last { r: 5; stroke-width: 2.5; }
+.viz .lbl.hi { font-weight: 700; }
+.viz .hover line { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 2 3; }
+.viztip { position: absolute; pointer-events: none; background: var(--ink); color: var(--paper); font-size: 12px; padding: 6px 9px; border-radius: 2px; white-space: nowrap; z-index: 5; display: none; }
+.vizwrap { position: relative; }
+.tracker table.hist { margin-top: 10px; font-size: 13px; }
+.tracker .progress { font-size: 13px; color: var(--muted); padding: 12px 0; }
+
+/* admin report */
+.report .rtools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0 14px; }
+.report .rgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.report .rbox { border: 1px solid var(--rule-2); border-radius: 2px; }
+.report .rbox .rh { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--rule); font-weight: 600; font-size: 13px; }
+.report .rbox textarea { border: 0; border-radius: 0; min-height: 120px; padding: 12px; background: var(--panel); overflow: hidden; }
+
+.notice { padding: 12px 14px; border: 1px solid var(--rule-2); border-radius: 2px; background: var(--panel); }
 .notice.err { border-color: var(--loss); }
-.notice code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
-.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.notice code { background: var(--panel-2); padding: 1px 5px; border-radius: 2px; font-size: 13px; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 10px 18px; border-radius: 2px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s; }
 .toast.show { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 .hidden { display: none !important; }
-footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--muted); font-size: 13px; }
+footer { max-width: 1320px; margin: 0 auto; padding: 0 20px 40px; color: var(--muted); font-size: 12.5px; }
+footer summary { cursor: pointer; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -188,14 +305,15 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     </div>
     <div class="actions">
       <div class="seg light" role="group" aria-label="Show names as">
-        <button type="button" id="nTeam" aria-pressed="true">Team names</button>
-        <button type="button" id="nMgr" aria-pressed="false">Managers</button>
+        <button type="button" id="nMgr" aria-pressed="true">Managers</button>
+        <button type="button" id="nTeam" aria-pressed="false">Team names</button>
       </div>
+      <button class="btn ghost sm" id="btnTheme" type="button" title="Switch between light and dark">Dark</button>
       <button class="btn ghost sm" id="btnRefresh" type="button" title="Reload scores and projections from Sleeper">Refresh</button>
       <button class="btn ghost sm" id="btnUndo" type="button" disabled title="Ctrl+Z">Undo</button>
       <button class="btn ghost sm" id="btnRedo" type="button" disabled title="Ctrl+Shift+Z">Redo</button>
       <button class="btn ghost sm" id="btnReset" type="button">Reset to current standings</button>
-      <button class="btn primary sm" id="btnShare" type="button">Copy link to this scenario</button>
+      <button class="btn ghost sm" id="btnShare" type="button">Copy link to this scenario</button>
     </div>
   </div>
 </header>
@@ -204,12 +322,13 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   <section class="pick">
     <div class="panel">
       <div class="ph">
-        <div class="seg" role="group" aria-label="Pick view">
+        <div class="seg" role="group" aria-label="View">
           <button type="button" id="vWeek" aria-pressed="true">By week</button>
           <button type="button" id="vTeam" aria-pressed="false">By team</button>
           <button type="button" id="vAdv" aria-pressed="false">Advanced</button>
+          <button type="button" id="vTrack" aria-pressed="false">Tracker</button>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="pickTools">
           <button class="btn sm" id="btnFav" type="button">Fill unpicked with favourites</button>
           <button class="btn sm" id="btnClear" type="button">Clear picks</button>
         </div>
@@ -224,16 +343,50 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       </div>
       <div id="advView" class="hidden">
         <div class="pb adv">
-          <p class="small" style="margin-bottom:10px">Fair Play is a team's record if it had played every other team every week (up to 11 wins a week). When a future game is picked, the default projection uses that team's own average Fair Play wins in weeks it won or lost this season, blended with the league average, so a team picked to win a lot is projected to pick up more than its share. Type a number to override a team's total Fair Play wins over its remaining weeks; leave blank to keep the projection. Points For works the same way.</p>
+          <p class="lead">Fair Play is a team's record if it had played every other team every week (up to 11 wins a week). Each week's projected Fair Play comes from that week's order under By week, which follows projected points and can be dragged. Type a number here to override a team's total Fair Play wins over its remaining weeks; leave blank to keep the projection. Points For works the same way.</p>
           <div style="overflow-x:auto"><table id="advTable"></table></div>
-          <div id="mgrSection" class="hidden">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 8px">
-            <h2>Manager mapping</h2>
-            <button class="btn sm" id="btnCopyMgr" type="button">Copy locked config</button>
+          <div id="mgrSection" class="sect hidden">
+            <div class="sh">
+              <h2>Manager mapping</h2>
+              <button class="btn sm" id="btnCopyMgr" type="button">Copy locked config</button>
+            </div>
+            <p class="small muted" id="mgrNote" style="margin-bottom:10px"></p>
+            <div style="overflow-x:auto"><table id="mgrTable"></table></div>
           </div>
-          <p class="small muted" id="mgrNote" style="margin-bottom:8px"></p>
-          <div style="overflow-x:auto"><table id="mgrTable"></table></div>
+          <div id="reportSection" class="sect report hidden">
+            <h2>Weekly report</h2>
+            <p class="small muted" style="max-width:70ch;margin-top:6px">Standings use the tiebreakers; odds are simulated from results to date only, so each week is measured the same way and the change from the week before is like for like. Numbers are fixed per week, so they match on every device.</p>
+            <div class="rtools">
+              <label class="small" for="reportWeek">After week</label>
+              <select id="reportWeek"></select>
+              <span class="small muted" id="reportStatus"></span>
+            </div>
+            <div class="rgrid">
+              <div class="rbox"><div class="rh"><span>Playoff standings</span><button class="btn sm" type="button" data-copy="rep1">Copy</button></div><textarea id="rep1" readonly spellcheck="false"></textarea></div>
+              <div class="rbox"><div class="rh"><span>Playoff probability</span><button class="btn sm" type="button" data-copy="rep2">Copy</button></div><textarea id="rep2" readonly spellcheck="false"></textarea></div>
+              <div class="rbox"><div class="rh"><span>Full odds</span><button class="btn sm" type="button" data-copy="rep3">Copy</button></div><textarea id="rep3" readonly spellcheck="false"></textarea></div>
+            </div>
           </div>
+        </div>
+      </div>
+      <div id="trackView" class="hidden">
+        <div class="tracker">
+          <p class="lead">How each team's position and odds have moved week by week. Every point is computed from results to that week only, by the tiebreakers and the same simulation, so weeks compare like for like. Pick up to six teams to highlight.</p>
+          <div class="legend" id="trackLegend"></div>
+          <div class="progress hidden" id="trackProgress"></div>
+          <h2>Playoff position after each week</h2>
+          <div class="vizwrap"><svg class="viz" id="vizSeed" role="img" aria-label="Playoff position by week"></svg><div class="viztip" id="tipSeed"></div></div>
+          <div class="ctrl">
+            <h2 style="margin:0">Odds after each week</h2>
+            <div class="seg" role="group" aria-label="Which odds">
+              <button type="button" data-metric="playoffs" aria-pressed="true">Playoff berth</button>
+              <button type="button" data-metric="div" aria-pressed="false">Division</button>
+              <button type="button" data-metric="bye" aria-pressed="false">Bye</button>
+              <button type="button" data-metric="one" aria-pressed="false">1 seed</button>
+            </div>
+          </div>
+          <div class="vizwrap"><svg class="viz" id="vizProb" role="img" aria-label="Odds by week"></svg><div class="viztip" id="tipProb"></div></div>
+          <details style="margin-top:16px"><summary class="small" style="cursor:pointer;font-weight:600">Table view</summary><div style="overflow-x:auto"><table class="hist" id="histTable"></table></div></details>
         </div>
       </div>
     </div>
@@ -241,15 +394,15 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
 
   <aside class="board">
     <div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px">
         <h2>Seeds in this scenario</h2>
         <span class="small muted" id="unpicked"></span>
       </div>
       <div class="seeds" id="seeds"></div>
-      <div style="margin-top:10px">
-        <h3 style="margin-bottom:6px">Outside looking in</h3>
-        <div class="outlist" id="outlist"></div>
-      </div>
+      <details class="outsideD" id="outsideD">
+        <summary><h3>Outside looking in</h3><span class="hint" id="outHint"></span></summary>
+        <div class="outside" id="outlist"></div>
+      </details>
     </div>
 
     <div class="panel prob">
@@ -260,9 +413,9 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
           <button class="btn sm" id="btnProb" type="button" aria-pressed="true">Live</button>
         </div>
       </div>
-      <div class="pb" style="padding-top:6px">
+      <div class="pb" style="padding-top:8px">
         <div style="overflow-x:auto"><table id="probTable"></table></div>
-        <p class="small muted" style="margin-top:8px" id="simNote"></p>
+        <p class="small muted" style="margin-top:12px;max-width:70ch" id="simNote"></p>
       </div>
     </div>
 
@@ -272,14 +425,14 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     </div>
   </aside>
 </main>
-<div id="loadBox" style="max-width:1240px;margin:18px auto;padding:0 20px"></div>
+<div id="loadBox" style="max-width:1320px;margin:16px auto;padding:0 20px"></div>
 <footer>
   <details>
-    <summary style="cursor:pointer">Tiebreaker rules this tool applies</summary>
+    <summary>Tiebreaker rules this tool applies</summary>
     <ol style="padding-left:18px;margin-top:8px;max-width:72ch">
       <li>Division winners take seeds 1–3. Division title: record, then head-to-head, then division record, then Fair Play, then Points For.</li>
       <li>Seeds 1–3 (among division winners): record, head-to-head, Fair Play, Points For.</li>
-      <li>Seeds 4–6 (wild cards, chosen one at a time): record, head-to-head, Fair Play, Points For.</li>
+      <li>Seeds 4–6 (wild cards, chosen one at a time): record, head-to-head, Fair Play, Points For. Positions 7–12 are ranked the same way.</li>
       <li>Head-to-head only settles a tie if one team has played and beaten every other tied team in every meeting (it takes the seed), or has played and lost to every other tied team in every meeting (it is eliminated and the tiebreak restarts from the top). A 1-1 split or an unplayed matchup does neither.</li>
       <li>Division record keeps only the team(s) with the best record among those still tied; everyone else is eliminated and the tiebreak restarts. Fair Play eliminates the lowest team(s) remaining, then restarts. If all remaining teams are level, the next tiebreaker applies.</li>
       <li>Points For is the last resort: highest total takes the seed.</li>
@@ -429,7 +582,52 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   function projectedFP(base, idx, won) { return won ? base.model[idx].fpWon : base.model[idx].fpLost; }
   function projectedPF(base, idx, won) { return won ? base.model[idx].pfWon : base.model[idx].pfLost; }
 
-  function buildScenario(league, base, picks, overrides) {
+  // ---------- fair play orders ----------
+  // A week's Fair Play order is a full ranking of the teams by that week's points: position 0 = (n-1) wins,
+  // last = 0. The default follows projected points (live-blended for the current week), then each picked
+  // game is reconciled: if the loser sits above the winner, both move to the midpoint of their positions,
+  // winner first. Games are disjoint pairs, so one pass settles every pick.
+  function defaultFpOrder(league, base, models, week, picks) {
+    const n = league.nTeams;
+    const m = models && models[week];
+    const mu = i => m ? m.mu[i] : base.model[i].mu;
+    const order = league.teams.map((_, i) => i).sort((a, b) => mu(b) - mu(a) || a - b);
+    return reconcileOrder(league, week, order, picks);
+  }
+  function reconcileOrder(league, week, order, picks) {
+    const wk = league.weeks.find(w => w.week === week); if (!wk) return order;
+    const o = order.slice();
+    wk.games.forEach((g, gi) => {
+      const p = picks[`${week}:${gi}`] | 0; if (!p) return;
+      const win = p === 1 ? g.a : g.b, lose = p === 1 ? g.b : g.a;
+      const iw = o.indexOf(win), il = o.indexOf(lose);
+      if (iw < 0 || il < 0 || iw < il) return;
+      const mid = Math.floor((iw + il) / 2);
+      const rest = o.filter(x => x !== win && x !== lose);
+      rest.splice(Math.min(mid, rest.length), 0, win, lose);
+      o.length = 0; o.push(...rest);
+    });
+    return o;
+  }
+  // {week: order} for every unlocked week: the user's order where set (reconciled with picks), else the default.
+  function effectiveFpOrders(league, base, models, picks, fpOrders) {
+    const out = {};
+    for (const wk of league.weeks) {
+      if (wk.locked) continue;
+      const user = fpOrders && fpOrders[wk.week];
+      out[wk.week] = user && user.length === league.nTeams ? reconcileOrder(league, wk.week, user, picks) : defaultFpOrder(league, base, models, wk.week, picks);
+    }
+    return out;
+  }
+  function fpFromOrder(order, n) { const fp = new Array(n).fill(0); order.forEach((t, k) => { fp[t] = n - 1 - k; }); return fp; }
+  // Picks implied by an order: the higher team wins each game that week.
+  function picksFromOrder(league, week, order) {
+    const wk = league.weeks.find(w => w.week === week); const out = {}; if (!wk) return out;
+    wk.games.forEach((g, gi) => { out[`${week}:${gi}`] = order.indexOf(g.a) < order.indexOf(g.b) ? 1 : 2; });
+    return out;
+  }
+
+  function buildScenario(league, base, picks, overrides, orders) {
     const s = cloneState(base.state);
     const n = league.nTeams;
     const projFP = new Array(n).fill(0), projPF = new Array(n).fill(0);
@@ -442,7 +640,9 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       picked[g.a]++; picked[g.b]++;
       addResult(s, league, g.a, g.b, p);
       const win = p === 1 ? g.a : g.b, lose = p === 1 ? g.b : g.a;
-      projFP[win] += projectedFP(base, win, true); projFP[lose] += projectedFP(base, lose, false);
+      const ord = orders && orders[g.week];
+      if (ord) { projFP[win] += n - 1 - ord.indexOf(win); projFP[lose] += n - 1 - ord.indexOf(lose); }
+      else { projFP[win] += projectedFP(base, win, true); projFP[lose] += projectedFP(base, lose, false); }
       projPF[win] += projectedPF(base, win, true); projPF[lose] += projectedPF(base, lose, false);
     }
     const ov = overrides || {};
@@ -565,24 +765,34 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       seeds.push({ seed: k, team: r.winner, type: 'wild', log: quiet ? [] : r.log });
       pool = pool.filter(i => i !== r.winner);
     }
-    // remaining teams, by record then PF (display only)
-    pool.sort((a, b) => (pct(s.w[b], s.l[b], s.t[b]) - pct(s.w[a], s.l[a], s.t[a])) || (s.pf[b] - s.pf[a]));
-    return { divWinners, seeds, out: pool };
+    // positions 7-12: the teams that miss out, ranked one at a time by the same wild-card tiebreakers
+    const out = [], outLog = [];
+    let pos = 4 + nWild;
+    while (pool.length) {
+      const r = resolveSeed(pool, s, STEPS.wildcard, league, name);
+      out.push(r.winner); outLog.push({ pos: pos++, team: r.winner, log: quiet ? [] : r.log });
+      pool = pool.filter(i => i !== r.winner);
+    }
+    return { divWinners, seeds, out, outLog };
   }
 
   // ---------- Monte Carlo ----------
-  // Gaussian via Box-Muller with cache
-  let spare = null;
+  // Gaussian via Box-Muller with cache; `rng` is Math.random or a seeded generator for reproducible runs
+  let spare = null, rng = Math.random;
+  function mulberry32(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   function gauss() {
     if (spare !== null) { const v = spare; spare = null; return v; }
     let u, v, r;
-    do { u = Math.random() * 2 - 1; v = Math.random() * 2 - 1; r = u * u + v * v; } while (r === 0 || r >= 1);
+    do { u = rng() * 2 - 1; v = rng() * 2 - 1; r = u * u + v * v; } while (r === 0 || r >= 1);
     const m = Math.sqrt(-2 * Math.log(r) / r);
     spare = v * m; return u * m;
   }
 
-  function simulate(league, base, picks, overrides, nSims, wildcards, models) {
+  // opts: { fpFixed: {week: fp[]} for weeks whose Fair Play order the user set, seed: integer for a reproducible run }
+  function simulate(league, base, picks, overrides, nSims, wildcards, models, opts) {
     const n = league.nTeams;
+    const fpFixed = (opts && opts.fpFixed) || {};
+    rng = opts && opts.seed != null ? mulberry32(opts.seed) : Math.random; spare = null;
     const tally = Array.from({ length: n }, () => ({ playoffs: 0, div: 0, seeds: new Array(7).fill(0), seedSum: 0, finishSum: 0 }));
     const future = league.weeks.filter(w => !w.locked);
     const ov = overrides || {};
@@ -601,7 +811,9 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
           else if (p === 2 && scores[g.b] < scores[g.a]) { const x = scores[g.a]; scores[g.a] = scores[g.b]; scores[g.b] = x; }
           addResult(s, league, g.a, g.b, scores[g.a] > scores[g.b] ? 1 : 2);
         });
-        for (let i = 0; i < n; i++) { fpAdd[i] += allPlayWins(scores, i); pfAdd[i] += scores[i]; }
+        const fixed = fpFixed[wk.week];
+        if (fixed) for (let i = 0; i < n; i++) { fpAdd[i] += fixed[i]; pfAdd[i] += scores[i]; }
+        else for (let i = 0; i < n; i++) { fpAdd[i] += allPlayWins(scores, i); pfAdd[i] += scores[i]; }
       }
       for (let i = 0; i < n; i++) {
         s.fp[i] += ov.fp && ov.fp[i] != null && ov.fp[i] !== '' ? Number(ov.fp[i]) : fpAdd[i];
@@ -610,8 +822,9 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       const r = seedPlayoffs(league, s, { quiet: true, wildcards });
       for (const d in r.divWinners) tally[r.divWinners[d].winner].div++;
       for (const sd of r.seeds) { const t = tally[sd.team]; t.playoffs++; t.seeds[sd.seed]++; t.seedSum += sd.seed; t.finishSum += sd.seed; }
-      r.out.forEach((team, k) => { tally[team].finishSum += r.seeds.length + 1 + k; }); // 7th-12th: non-playoff teams by record, then points
+      r.out.forEach((team, k) => { tally[team].finishSum += r.seeds.length + 1 + k; }); // 7th-12th by the wild-card tiebreakers
     }
+    rng = Math.random; spare = null;
     return tally.map(t => ({
       playoffs: t.playoffs / nSims, div: t.div / nSims,
       seeds: t.seeds.map(x => x / nSims),
@@ -619,6 +832,28 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       avgSeed: t.playoffs ? t.seedSum / t.playoffs : null, // average seed when making the playoffs
       avgFinish: t.finishSum / nSims,                      // average finishing position 1-12 across all simulations
     }));
+  }
+
+  // ---------- season history ----------
+  // The league as it stood after week X: weeks <= X locked with their scores, later weeks unplayed.
+  function leagueAfterWeek(league, X) {
+    const weeks = league.weeks.map(w => w.week <= X
+      ? Object.assign({}, w, { locked: true })
+      : Object.assign({}, w, { locked: false, games: w.games.map(g => ({ a: g.a, b: g.b, pa: 0, pb: 0 })), scores: {}, lineups: {} }));
+    return Object.assign({}, league, { weeks });
+  }
+  // Seeds (by the tiebreakers) and simulated odds after week X, from results to date only (no projections),
+  // with a fixed seed so everyone who opens the page gets the same numbers.
+  function historyPoint(league, X, nSims, labelFor) {
+    const L = leagueAfterWeek(league, X);
+    const base = buildBase(L);
+    const seeding = seedPlayoffs(L, base.state, { labelFor });
+    const n = league.nTeams;
+    const finish = new Array(n).fill(0);
+    seeding.seeds.forEach(x => { finish[x.team] = x.seed; });
+    seeding.out.forEach((t, k) => { finish[t] = seeding.seeds.length + 1 + k; });
+    const odds = simulate(L, base, {}, {}, nSims, 3, null, { seed: 1000 + X });
+    return { week: X, finish, odds, seeding };
   }
 
   // ---------- projections: optimal lineups and per-week score models ----------
@@ -715,6 +950,11 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     const f = enc(ov.fp), q = enc(ov.pf);
     if (f) parts.push(`fp=${f}`);
     if (q) parts.push(`pf=${q}`);
+    const fo = arguments[3] || {};
+    const os = Object.keys(fo).map(Number).sort((a, b) => a - b)
+      .filter(w => fo[w] && fo[w].length === league.nTeams && league.weeks.some(x => x.week === w && !x.locked))
+      .map(w => `${w}.${fo[w].map(i => i.toString(16)).join('')}`);
+    if (os.length) parts.push(`o=${os.join(',')}`);
     return parts.join('&');
   }
 
@@ -734,10 +974,18 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       if (idx >= 0 && v !== '' && !isNaN(Number(v))) tgt[idx] = Number(v);
     });
     dec(q.get('fp'), overrides.fp); dec(q.get('pf'), overrides.pf);
-    return { picks, overrides };
+    const fpOrders = {};
+    (q.get('o') || '').split(',').filter(Boolean).forEach(tok => {
+      const [w, digits] = tok.split('.'); const week = Number(w);
+      if (!digits || digits.length !== league.nTeams) return;
+      const order = digits.split('').map(c => parseInt(c, 16));
+      if (new Set(order).size !== league.nTeams || order.some(i => isNaN(i) || i >= league.nTeams)) return;
+      if (league.weeks.some(x => x.week === week && !x.locked)) fpOrders[week] = order;
+    });
+    return { picks, overrides, fpOrders };
   }
 
-  root.Engine = { pct, fmtRec, buildBase, buildScenario, remainingGames, teamRemaining, resolveSeed, seedPlayoffs, simulate, winProb, encodeScenario, decodeScenario, projectedFP, projectedPF, optimalLineup, buildWeekModels, STEPS };
+  root.Engine = { pct, fmtRec, buildBase, buildScenario, remainingGames, teamRemaining, resolveSeed, seedPlayoffs, simulate, winProb, encodeScenario, decodeScenario, projectedFP, projectedPF, optimalLineup, buildWeekModels, defaultFpOrder, reconcileOrder, effectiveFpOrders, fpFromOrder, picksFromOrder, leagueAfterWeek, historyPoint, STEPS };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -773,16 +1021,17 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     return null;
   }
   const ADMIN = new URLSearchParams(location.search).get('admin') === '1';
-  let nameMode = 'team';
-  try { nameMode = localStorage.getItem('ffpo:names') === 'mgr' ? 'mgr' : 'team'; } catch (e) { /* ignore */ }
+  let nameMode = 'mgr';
+  try { nameMode = localStorage.getItem('ffpo:names') === 'team' ? 'team' : 'mgr'; } catch (e) { /* ignore */ }
   const API = 'https://api.sleeper.app/v1';
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const pctS = x => `${Math.round(x * 100)}%`;
 
-  let leagueId, league, base, picks = {}, overrides = { fp: {}, pf: {} };
+  let leagueId, league, base, picks = {}, overrides = { fp: {}, pf: {} }, fpOrders = {}, orders = {};
   let models = {}, projInfo = null, projPlayers = {}; // projInfo: { generated, weeks, live } or null when falling back to season averages
   let view = 'week', curTab = 1, selTeam = 0, liveProb = true, sim = null, simTimer = null, renderTimer = null;
+  let histCache = {}, histRunning = false, histWanted = false, trackMetric = 'playoffs', trackSel = [];
   let scenario, seeding, warnings = [];
 
   // ---------- loading ----------
@@ -892,14 +1141,14 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     let hash = location.hash;
     if (!hash || hash.length < 2) { try { hash = localStorage.getItem(LS_KEY()) || ''; } catch (e) { hash = ''; } }
     const d = E.decodeScenario(league, hash);
-    picks = d.picks; overrides = d.overrides;
+    picks = d.picks; overrides = d.overrides; fpOrders = d.fpOrders || {};
   }
   function persist() {
-    const h = E.encodeScenario(league, picks, overrides);
+    const h = E.encodeScenario(league, picks, overrides, fpOrders);
     try { history.replaceState(null, '', `${location.pathname}${location.search}#${h}`); } catch (e) { /* ignore */ }
     try { localStorage.setItem(LS_KEY(), `#${h}`); } catch (e) { /* ignore */ }
   }
-  function shareUrl() { return `${location.origin}${location.pathname}${location.search}#${E.encodeScenario(league, picks, overrides)}`; }
+  function shareUrl() { return `${location.origin}${location.pathname}${location.search}#${E.encodeScenario(league, picks, overrides, fpOrders)}`; }
 
   // ---------- helpers ----------
   const T = i => league.teams[i];
@@ -910,15 +1159,27 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   const muOf = (i, week) => models[week] ? models[week].mu[i] : base.model[i].mu;
   function setPick(key, val) {
     if (val) picks[key] = val; else delete picks[key];
+    const week = Number(key.split(':')[0]);
+    if (fpOrders[week]) fpOrders[week] = E.reconcileOrder(league, week, fpOrders[week], picks);
     scheduleRender();
+  }
+  // Dragging a week's order also settles that week's results: the higher team wins.
+  function setOrder(week, order) {
+    fpOrders[week] = order.slice();
+    Object.assign(picks, E.picksFromOrder(league, week, order));
+    scheduleRender();
+  }
+  function clearWeek(week) {
+    const wk = league.weeks.find(w => w.week === week); if (!wk) return;
+    wk.games.forEach((g, gi) => delete picks[`${week}:${gi}`]); delete fpOrders[week];
   }
   function scheduleRender() { clearTimeout(renderTimer); renderTimer = setTimeout(renderAll, 10); }
 
   // ---------- rendering ----------
   const undoStack = [], redoStack = [];
   let lastSnap = null, restoring = false;
-  function snapshot() { return E.encodeScenario(league, picks, overrides); }
-  function applySnap(snap) { const d = E.decodeScenario(league, '#' + snap); picks = d.picks; overrides = d.overrides; }
+  function snapshot() { return E.encodeScenario(league, picks, overrides, fpOrders); }
+  function applySnap(snap) { const d = E.decodeScenario(league, '#' + snap); picks = d.picks; overrides = d.overrides; fpOrders = d.fpOrders || {}; }
   function trackHistory() {
     const now = snapshot();
     if (lastSnap !== null && now !== lastSnap && !restoring) { undoStack.push(lastSnap); if (undoStack.length > 100) undoStack.shift(); redoStack.length = 0; }
@@ -929,12 +1190,13 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   function redo() { if (!redoStack.length) return; undoStack.push(snapshot()); restoring = true; applySnap(redoStack.pop()); renderAll(); toast('Redone'); }
 
   function renderAll() {
-    scenario = E.buildScenario(league, base, picks, overrides);
+    orders = E.effectiveFpOrders(league, base, models, picks, fpOrders);
+    scenario = E.buildScenario(league, base, picks, overrides, orders);
     seeding = E.seedPlayoffs(league, scenario.state, { labelFor: N });
     trackHistory();
     persist();
     renderStatus(); renderSeeds(); renderStandings();
-    if (view === 'week') renderWeek(); else if (view === 'team') renderTeam(); else renderAdv();
+    if (view === 'week') renderWeek(); else if (view === 'team') renderTeam(); else if (view === 'adv') renderAdv(); else renderTracker();
     updateTabDots();
     if (liveProb) scheduleSim(); else renderProb();
   }
@@ -972,16 +1234,33 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
 
   function renderSeeds() {
     const s = scenario.state;
+    const ol = log => `<ol>${log.map(l => `<li>${esc(l)}</li>`).join('')}</ol>`;
     $('seeds').innerHTML = seeding.seeds.map(x => {
       const p = sim ? sim[x.team] : null;
-      const tag = x.type === 'div' ? `${esc(league.divs[T(x.team).div])} champion` : 'Wild card';
-      const how = x.log.length ? `<details class="how"><summary>How seed ${x.seed} was decided</summary><ol>${x.log.map(l => `<li>${esc(l)}</li>`).join('')}</ol></details>` : '';
-      return `<div class="seed ${x.type}"><div class="no cond">${x.seed}</div><div class="body">
+      const divName = league.divs[T(x.team).div];
+      const tag = x.type === 'div' ? `${esc(divName)} champion` : 'Wild card';
+      let how = '';
+      if (x.type === 'div') {
+        const dl = (seeding.divWinners[T(x.team).div] || {}).log || [];
+        const parts = [];
+        parts.push(`<h4>Winning the ${esc(divName)}</h4>${dl.length ? ol(dl) : '<p class="muted">Best record in the division outright.</p>'}`);
+        parts.push(`<h4>Seed ${x.seed} among the division winners</h4>${x.log.length ? ol(x.log) : '<p class="muted">Only division winner left for this seed.</p>'}`);
+        how = `<details class="how"><summary>How seed ${x.seed} was decided</summary>${parts.join('')}</details>`;
+      } else if (x.log.length) how = `<details class="how"><summary>How seed ${x.seed} was decided</summary>${ol(x.log)}</details>`;
+      return `<div class="seed ${x.type}"><div class="no">${x.seed}</div><div class="body">
         <div class="nm"><span>${esc(N(x.team))}</span>${p ? `<span class="pct" title="Chance of making the playoffs given these picks">${pctS(p.playoffs)} in</span>` : ''}</div>
         <div class="meta"><span class="tag">${tag}</span><span>${recOf(s, x.team)}</span><span>Div ${divRecOf(s, x.team)}</span><span>FP ${s.fp[x.team].toFixed(1)}</span><span>PF ${s.pf[x.team].toFixed(1)}</span></div>
         ${how}</div></div>`;
     }).join('');
-    $('outlist').innerHTML = seeding.out.map(i => `<span>${esc(N(i))} ${recOf(s, i)}</span>`).join('') || '<span>Everyone is in</span>';
+    $('outlist').innerHTML = (seeding.outLog || []).map(x => {
+      const p = sim ? sim[x.team] : null;
+      const how = x.log.length ? `<details class="how"><summary>How ${x.pos}th was decided</summary>${ol(x.log)}</details>` : '';
+      return `<div class="orow"><div class="no">${x.pos}</div><div class="body">
+        <div class="nm"><span>${esc(N(x.team))}</span>${p ? `<span class="pct">${pctS(p.playoffs)} in</span>` : ''}</div>
+        <div class="meta"><span>${recOf(s, x.team)}</span><span>Div ${divRecOf(s, x.team)}</span><span>FP ${s.fp[x.team].toFixed(1)}</span><span>PF ${s.pf[x.team].toFixed(1)}</span></div>${how}</div></div>`;
+    }).join('') || '<div class="orow"><div class="body muted">Everyone is in</div></div>';
+    const ol2 = seeding.outLog || [];
+    $('outHint').textContent = ol2.length ? ol2.map(x => `${x.pos}. ${N(x.team)}`).join('  ·  ') : '';
   }
 
   function renderStandings() {
@@ -1000,14 +1279,14 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
 
   // week view
   function buildWeekTabs() {
-    $('weekTabs').innerHTML = league.weeks.map(w => `<button type="button" data-w="${w.week}" aria-pressed="${w.week === curTab}">Wk ${w.week}${models[w.week] && models[w.week].live ? ' <b class="live">live</b>' : ''}${w.locked ? '' : '<span class="dot hidden"></span>'}</button>`).join('');
+    $('weekTabs').innerHTML = league.weeks.map(w => `<button type="button" data-w="${w.week}" aria-pressed="${w.week === curTab}">Wk ${w.week}${models[w.week] && models[w.week].live ? ' <b class="live">live</b>' : ''}${w.locked ? '' : '<span class="tick hidden">✓</span>'}</button>`).join('');
     $('weekTabs').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { curTab = Number(b.dataset.w); buildWeekTabs(); renderWeek(); }));
   }
   function updateTabDots() {
     $('weekTabs').querySelectorAll('button').forEach(b => {
       const wk = league.weeks.find(w => w.week === Number(b.dataset.w)); if (!wk || wk.locked) return;
       const done = wk.games.every((g, gi) => picks[`${wk.week}:${gi}`]);
-      const dot = b.querySelector('.dot'); if (dot) dot.classList.toggle('hidden', !done);
+      const dot = b.querySelector('.tick'); if (dot) dot.classList.toggle('hidden', !done);
     });
   }
   function sideHtml(i, opp, wk, gi, right, pick) {
@@ -1033,14 +1312,90 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       const pick = picks[`${wk.week}:${gi}`] | 0;
       return `<div class="mu">${sideHtml(g.a, g.b, wk, gi, false, pick)}<span class="vs">${wk.locked ? 'final' : 'v'}</span>${sideHtml(g.b, g.a, wk, gi, true, pick)}</div>`;
     }).join('');
-    const tools = wk.locked ? '' : `<div style="display:flex;gap:6px;justify-content:flex-end"><button class="btn sm" type="button" id="wkFav">Favourites this week</button><button class="btn sm" type="button" id="wkClear">Clear this week</button></div>`;
-    $('matchups').innerHTML = tools + rows;
+    const tools = wk.locked ? '' : `<div class="mtools"><button class="btn sm" type="button" id="wkFav">Favourites this week</button><button class="btn sm" type="button" id="wkClear">Clear this week</button></div>`;
+    $('matchups').innerHTML = tools + rows + (wk.locked ? '' : fpPanelHtml(wk));
+    if (!wk.locked) wireFpPanel(wk);
     $('matchups').querySelectorAll('button.side').forEach(b => b.addEventListener('click', () => {
       const v = Number(b.dataset.val); const k = b.dataset.key;
       setPick(k, picks[k] === v ? 0 : v);
     }));
     const fav = $('wkFav'); if (fav) fav.addEventListener('click', () => { wk.games.forEach((g, gi) => { picks[`${wk.week}:${gi}`] = winP(g.a, g.b, wk.week) >= 0.5 ? 1 : 2; }); scheduleRender(); });
-    const clr = $('wkClear'); if (clr) clr.addEventListener('click', () => { wk.games.forEach((g, gi) => delete picks[`${wk.week}:${gi}`]); scheduleRender(); });
+    const clr = $('wkClear'); if (clr) clr.addEventListener('click', () => { clearWeek(wk.week); scheduleRender(); });
+  }
+
+  // Fair Play order panel for one week
+  const fpOpen = {};
+  function fpPanelHtml(wk) {
+    const s = scenario.state;
+    const order = orders[wk.week] || [];
+    const n = league.nTeams;
+    const touched = !!fpOrders[wk.week];
+    const isCur = wk.week === league.cur;
+    const m = models[wk.week];
+    const rows = order.map((i, k) => {
+      const gi = wk.games.findIndex(g => g.a === i || g.b === i);
+      const p = gi >= 0 ? (picks[`${wk.week}:${gi}`] | 0) : 0;
+      const g = gi >= 0 ? wk.games[gi] : null;
+      const wl = p ? ((p === 1) === (g.a === i) ? '<b class="wl" style="color:var(--win)">W</b>' : '<b class="wl" style="color:var(--loss)">L</b>') : '';
+      const st = isCur ? liveTag(i, wk.week) : '';
+      const proj = m && m.live ? `${m.detail[i].actual.toFixed(1)} so far · ${muOf(i, wk.week).toFixed(1)} proj` : `${muOf(i, wk.week).toFixed(1)} proj`;
+      return `<div class="fprow" data-i="${i}" data-k="${k}">
+        <span class="fpw">${n - 1 - k}</span>
+        <span class="grip" aria-hidden="true">⋮⋮</span>
+        <span class="tn">${esc(N(i))}${wl}${st}<small>${recOf(s, i)}</small></span>
+        <span class="proj">${proj}</span>
+        <span class="ud"><button type="button" data-mv="-1" aria-label="Move ${esc(N(i))} up">▲</button><button type="button" data-mv="1" aria-label="Move ${esc(N(i))} down">▼</button></span>
+      </div>`;
+    }).join('');
+    const hint = touched ? 'set by you' : (m ? 'follows projected points' : 'follows season averages');
+    return `<details class="fpo ${touched ? 'touched' : ''}" id="fpo" ${fpOpen[wk.week] ? 'open' : ''}>
+      <summary><span class="ttl">Fair Play order, week ${wk.week}</span><span class="hint">${hint}</span></summary>
+      <p class="fpnote">Top of the list scores the most points this week and earns ${n - 1} Fair Play wins; bottom earns none. Drag a team (or use the arrows) to set the order. Setting the order also decides the week's matchups: the higher team wins. Picking a game moves the winner above the loser. Fair Play from this order counts in the scenario for games that are picked.</p>
+      <div class="fptools">${touched ? '<button class="btn sm" type="button" id="fpReset">Back to projected order</button>' : ''}<button class="btn sm" type="button" id="fpLock">${touched ? 'Order is set' : 'Set this order'}</button></div>
+      <div class="fplist" id="fplist">${rows}</div>
+    </details>`;
+  }
+  function wireFpPanel(wk) {
+    const det = $('fpo'); if (!det) return;
+    det.addEventListener('toggle', () => { fpOpen[wk.week] = det.open; });
+    const list = $('fplist');
+    const current = () => Array.from(list.querySelectorAll('.fprow')).map(r => Number(r.dataset.i));
+    const lock = $('fpLock'); if (lock) lock.addEventListener('click', () => { fpOpen[wk.week] = true; setOrder(wk.week, current()); });
+    const rst = $('fpReset'); if (rst) rst.addEventListener('click', () => { fpOpen[wk.week] = true; delete fpOrders[wk.week]; scheduleRender(); });
+    list.querySelectorAll('.ud button').forEach(b => b.addEventListener('click', e => {
+      e.stopPropagation();
+      const row = b.closest('.fprow'); const k = Number(row.dataset.k); const mv = Number(b.dataset.mv);
+      const o = current(); const j = k + mv; if (j < 0 || j >= o.length) return;
+      [o[k], o[j]] = [o[j], o[k]]; fpOpen[wk.week] = true; setOrder(wk.week, o);
+    }));
+    // pointer drag (mouse and touch)
+    let drag = null;
+    list.querySelectorAll('.fprow').forEach(row => {
+      row.addEventListener('pointerdown', e => {
+        if (e.target.closest('.ud')) return;
+        drag = { row, k: Number(row.dataset.k), to: Number(row.dataset.k) };
+        row.classList.add('dragging'); row.setPointerCapture(e.pointerId); e.preventDefault();
+      });
+      row.addEventListener('pointermove', e => {
+        if (!drag) return;
+        const rows = Array.from(list.querySelectorAll('.fprow'));
+        rows.forEach(r => r.classList.remove('over', 'over-below'));
+        let to = rows.length - 1, below = true;
+        for (let k = 0; k < rows.length; k++) { const b = rows[k].getBoundingClientRect(); if (e.clientY < b.top + b.height / 2) { to = k; below = false; break; } }
+        drag.to = below ? rows.length - 1 : to; drag.below = below;
+        if (drag.to !== drag.k) rows[drag.to].classList.add(below ? 'over-below' : 'over');
+      });
+      const end = e => {
+        if (!drag) return;
+        const { k, to, below } = drag; drag = null;
+        list.querySelectorAll('.fprow').forEach(r => r.classList.remove('over', 'over-below', 'dragging'));
+        if (to === k) return;
+        const o = current(); const [item] = o.splice(k, 1);
+        let ins = below ? o.length : to; if (!below && to > k) ins = to - 1;
+        o.splice(ins, 0, item); fpOpen[wk.week] = true; setOrder(wk.week, o);
+      };
+      row.addEventListener('pointerup', end); row.addEventListener('pointercancel', end);
+    });
   }
 
   // team view
@@ -1087,22 +1442,23 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
       let pw = 0, pl = 0, fpProj = 0, pfProj = 0;
       for (const g of mine) {
         const p = picks[g.key] | 0; const opp = g.a === i ? g.b : g.a; const meA = g.a === i;
-        if (p) { const won = (p === 1) === meA; if (won) pw++; else pl++; fpProj += E.projectedFP(base, i, won); pfProj += E.projectedPF(base, i, won); }
-        else { const q = winP(i, opp, g.week); fpProj += q * E.projectedFP(base, i, true) + (1 - q) * E.projectedFP(base, i, false); pfProj += q * E.projectedPF(base, i, true) + (1 - q) * E.projectedPF(base, i, false); }
+        const ord = orders[g.week];
+        if (p) { const won = (p === 1) === meA; if (won) pw++; else pl++; fpProj += ord ? n - 1 - ord.indexOf(i) : E.projectedFP(base, i, won); pfProj += E.projectedPF(base, i, won); }
+        else { const q = winP(i, opp, g.week); fpProj += ord ? n - 1 - ord.indexOf(i) : q * E.projectedFP(base, i, true) + (1 - q) * E.projectedFP(base, i, false); pfProj += q * E.projectedPF(base, i, true) + (1 - q) * E.projectedPF(base, i, false); }
       }
       const unp = mine.length - pw - pl;
       const avgRef = (perWeek / 2) * mine.length;
       const fpO = overrides.fp[i], pfO = overrides.pf[i];
       html += `<tr><td class="teamcell">${esc(N(i))}</td><td class="num">${mine.length}</td><td class="num">${pw}-${pl}${unp ? `<span class="hint"> +${unp} open</span>` : ''}</td>
         <td class="num">${base.state.fp[i].toFixed(1)}</td>
-        <td class="num">${fpProj.toFixed(1)}<div class="hint">max ${perWeek * mine.length}, avg team ${avgRef.toFixed(1)}</div></td>
+        <td class="num">${fpProj.toFixed(1)}<div class="hint">max ${perWeek * mine.length} · avg ${avgRef.toFixed(1)}</div></td>
         <td class="num"><input type="number" step="0.5" min="0" max="${perWeek * mine.length}" data-kind="fp" data-i="${i}" value="${fpO != null ? fpO : ''}" placeholder="${fpProj.toFixed(1)}" class="${fpO != null ? 'over' : ''}" aria-label="Override remaining Fair Play wins for ${esc(N(i))}"></td>
         <td class="num">${base.state.pf[i].toFixed(1)}</td>
         <td class="num">${pfProj.toFixed(1)}</td>
         <td class="num"><input type="number" step="1" min="0" data-kind="pf" data-i="${i}" value="${pfO != null ? pfO : ''}" placeholder="${pfProj.toFixed(0)}" class="${pfO != null ? 'over' : ''}" aria-label="Override remaining points for ${esc(N(i))}"></td></tr>`;
     }
     $('advTable').innerHTML = html + '</tbody>';
-    if (ADMIN) { $('mgrSection').classList.remove('hidden'); renderManagerMap(); }
+    if (ADMIN) { $('mgrSection').classList.remove('hidden'); renderManagerMap(); $('reportSection').classList.remove('hidden'); renderReport(); }
     $('advTable').querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => {
       const i = Number(inp.dataset.i); const tgt = overrides[inp.dataset.kind];
       if (inp.value === '' || isNaN(Number(inp.value))) delete tgt[i]; else tgt[i] = Number(inp.value);
@@ -1126,7 +1482,8 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     clearTimeout(simTimer);
     simTimer = setTimeout(() => {
       const n = Number($('nsims').value) || 3000;
-      sim = E.simulate(league, base, picks, overrides, n, 3, models);
+      const fpFixed = {}; for (const w in fpOrders) if (orders[w]) fpFixed[w] = E.fpFromOrder(orders[w], league.nTeams);
+      sim = E.simulate(league, base, picks, overrides, n, 3, models, { fpFixed });
       renderProb(); renderSeeds();
       if (view === 'week') renderWeek();
     }, 120);
@@ -1146,8 +1503,9 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   // ---------- wiring ----------
   function setView(v) {
     view = v;
-    $('vWeek').setAttribute('aria-pressed', v === 'week'); $('vTeam').setAttribute('aria-pressed', v === 'team'); $('vAdv').setAttribute('aria-pressed', v === 'adv');
-    $('weekView').classList.toggle('hidden', v !== 'week'); $('teamView').classList.toggle('hidden', v !== 'team'); $('advView').classList.toggle('hidden', v !== 'adv');
+    ['Week', 'Team', 'Adv', 'Track'].forEach(k => $('v' + k).setAttribute('aria-pressed', v === k.toLowerCase().replace('track', 'track')));
+    $('weekView').classList.toggle('hidden', v !== 'week'); $('teamView').classList.toggle('hidden', v !== 'team'); $('advView').classList.toggle('hidden', v !== 'adv'); $('trackView').classList.toggle('hidden', v !== 'track');
+    $('pickTools').classList.toggle('hidden', v === 'track');
     renderAll();
   }
   function setNameMode(m) {
@@ -1155,6 +1513,22 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
     $('nTeam').setAttribute('aria-pressed', m === 'team'); $('nMgr').setAttribute('aria-pressed', m === 'mgr');
     if (scenario) renderAll();
   }
+  // light / dark toggle (stored; otherwise follows the system)
+  function applyTheme(t) {
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
+    const dark = t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    $('btnTheme').textContent = dark ? 'Light' : 'Dark';
+  }
+  let theme = null; try { theme = localStorage.getItem('ffpo:theme'); } catch (e) { /* ignore */ }
+  applyTheme(theme);
+  $('btnTheme').addEventListener('click', () => {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark' || (!document.documentElement.getAttribute('data-theme') && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    theme = dark ? 'light' : 'dark'; try { localStorage.setItem('ffpo:theme', theme); } catch (e) { /* ignore */ }
+    applyTheme(theme);
+  });
+  // outside-looking-in toggle, remembered
+  try { $('outsideD').open = localStorage.getItem('ffpo:outside') === '1'; } catch (e) { /* ignore */ }
+  $('outsideD').addEventListener('toggle', () => { try { localStorage.setItem('ffpo:outside', $('outsideD').open ? '1' : '0'); } catch (e) { /* ignore */ } });
   $('nTeam').addEventListener('click', () => setNameMode('team'));
   $('nMgr').addEventListener('click', () => setNameMode('mgr'));
   $('btnCopyMgr').addEventListener('click', async () => {
@@ -1164,14 +1538,15 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   $('vWeek').addEventListener('click', () => setView('week'));
   $('vTeam').addEventListener('click', () => setView('team'));
   $('vAdv').addEventListener('click', () => setView('adv'));
+  $('vTrack').addEventListener('click', () => setView('track'));
   $('btnFav').addEventListener('click', () => { E.remainingGames(league).forEach(g => { if (!picks[g.key]) picks[g.key] = winP(g.a, g.b, g.week) >= 0.5 ? 1 : 2; }); scheduleRender(); });
   $('btnRefresh').addEventListener('click', () => location.reload());
-  $('btnClear').addEventListener('click', () => { picks = {}; scheduleRender(); });
-  $('btnReset').addEventListener('click', () => { picks = {}; overrides = { fp: {}, pf: {} }; scheduleRender(); toast('Back to current standings. Undo brings the scenario back'); });
+  $('btnClear').addEventListener('click', () => { picks = {}; fpOrders = {}; scheduleRender(); });
+  $('btnReset').addEventListener('click', () => { picks = {}; overrides = { fp: {}, pf: {} }; fpOrders = {}; scheduleRender(); toast('Back to current standings. Undo brings the scenario back'); });
   $('btnUndo').addEventListener('click', undo);
   $('btnRedo').addEventListener('click', redo);
   document.addEventListener('keydown', e => {
-    if (!(e.ctrlKey || e.metaKey) || e.target.tagName === 'INPUT') return;
+    if (!(e.ctrlKey || e.metaKey) || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
     else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') { e.preventDefault(); redo(); }
   });
@@ -1183,6 +1558,176 @@ footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--m
   $('btnProb').addEventListener('click', () => { liveProb = !liveProb; $('btnProb').setAttribute('aria-pressed', liveProb); if (liveProb) scheduleSim(); else { sim = null; renderProb(); renderSeeds(); if (view === 'week') renderWeek(); } });
   $('nsims').addEventListener('change', () => { if (liveProb) scheduleSim(); });
   window.addEventListener('hashchange', () => { if (!league) return; restore(); renderAll(); });
+
+  // ---------- season history (results to date only, fixed seed) ----------
+  const HIST_SIMS = 1500;
+  function completedWeeks() { return league.weeks.filter(w => w.locked).map(w => w.week); }
+  function histLabel(X) { return (X === league.cur && !league.weeks.find(w => w.week === X).locked) ? `${X} (in progress)` : String(X); }
+  function ensureHistory(weeks, onProgress, onDone) {
+    const todo = weeks.filter(w => !histCache[w]);
+    if (!todo.length) { onDone(); return; }
+    if (histRunning) { histWanted = true; return; }
+    histRunning = true;
+    let k = 0;
+    const step = () => {
+      const w = todo[k];
+      onProgress(k, todo.length, w);
+      try { histCache[w] = E.historyPoint(league, w, HIST_SIMS, N); } catch (e) { console.error(e); }
+      k++;
+      if (k < todo.length) setTimeout(step, 0);
+      else { histRunning = false; onDone(); if (histWanted) { histWanted = false; } }
+    };
+    setTimeout(step, 0);
+  }
+  function fmtDelta(prev, cur) { if (prev == null) return '(-)'; const d = prev - cur; return d === 0 ? '(-)' : `(${d > 0 ? '+' : ''}${d})`; }
+  function fmtDeltaPts(prev, cur) { if (prev == null) return '(-)'; const d = Math.round(cur * 100) - Math.round(prev * 100); return d === 0 ? '(-)' : `(${d > 0 ? '+' : ''}${d})`; }
+
+  function renderReport() {
+    const sel = $('reportWeek');
+    const opts = completedWeeks().slice();
+    const curWk = league.weeks.find(w => w.week === league.cur);
+    if (curWk && !curWk.locked) opts.push(league.cur);
+    if (!opts.length) { $('reportStatus').textContent = 'No completed weeks yet.'; return; }
+    const prevVal = Number(sel.value);
+    sel.innerHTML = opts.map(w => `<option value="${w}">${histLabel(w)}</option>`).join('');
+    const done = completedWeeks(); const dflt = done.length ? done[done.length - 1] : opts[opts.length - 1];
+    sel.value = String(opts.includes(prevVal) ? prevVal : dflt);
+    if (!sel.dataset.wired) { sel.dataset.wired = '1'; sel.addEventListener('change', fillReport); document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => { const t = $(b.dataset.copy).value; try { await navigator.clipboard.writeText(t); toast('Copied'); } catch (e) { window.prompt('Copy this', t); } })); }
+    fillReport();
+  }
+  function fillReport() {
+    const X = Number($('reportWeek').value); const P = X - 1;
+    const need = P >= 1 ? [P, X] : [X];
+    $('reportStatus').textContent = 'Computing…';
+    ensureHistory(need, (k, n, w) => { $('reportStatus').textContent = `Simulating week ${w} (${k + 1} of ${n})…`; }, () => {
+      const cur = histCache[X], prev = histCache[P];
+      if (!cur) { $('reportStatus').textContent = 'Could not compute.'; return; }
+      $('reportStatus').textContent = prev ? `Changes are against week ${P}.` : 'First week: no changes to show.';
+      const n = league.nTeams;
+      const order = league.teams.map((_, i) => i).sort((a, b) => cur.finish[a] - cur.finish[b]);
+      const lines1 = [`Playoff Standings after Week ${X}:`, ''];
+      order.forEach(i => { lines1.push(`${cur.finish[i]}. ${N(i)} ${fmtDelta(prev ? prev.finish[i] : null, cur.finish[i])}`); if (cur.finish[i] === 6) lines1.push(''); });
+      $('rep1').value = lines1.join('\n');
+      const byP = league.teams.map((_, i) => i).sort((a, b) => cur.odds[b].playoffs - cur.odds[a].playoffs || cur.finish[a] - cur.finish[b]);
+      const lines2 = [`Playoff Probability after Week ${X}:`, ''];
+      byP.forEach((i, k) => lines2.push(`${k + 1}. ${N(i)} ${Math.round(cur.odds[i].playoffs * 100)}% ${fmtDeltaPts(prev ? prev.odds[i].playoffs : null, cur.odds[i].playoffs)}`));
+      $('rep2').value = lines2.join('\n');
+      const lines3 = [`Odds after Week ${X} (playoffs · division · bye · 1 seed):`, ''];
+      byP.forEach((i, k) => { const o = cur.odds[i]; lines3.push(`${k + 1}. ${N(i)}: ${Math.round(o.playoffs * 100)}% · ${Math.round(o.div * 100)}% · ${Math.round(o.bye * 100)}% · ${Math.round(o.seeds[1] * 100)}%`); });
+      const clinched = byP.filter(i => cur.odds[i].playoffs >= 0.9995).map(N), gone = byP.filter(i => cur.odds[i].playoffs <= 0.0005).map(N);
+      if (clinched.length || gone.length) { lines3.push(''); if (clinched.length) lines3.push(`Clinched: ${clinched.join(', ')}`); if (gone.length) lines3.push(`Eliminated: ${gone.join(', ')}`); }
+      if (prev) {
+        const movers = league.teams.map((_, i) => ({ i, d: cur.odds[i].playoffs - prev.odds[i].playoffs })).sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 3).filter(m => Math.abs(m.d) >= 0.05);
+        if (movers.length) { lines3.push(''); lines3.push(`Biggest movers: ${movers.map(m => `${N(m.i)} ${m.d > 0 ? '+' : ''}${Math.round(m.d * 100)}`).join(', ')}`); }
+      }
+      $('rep3').value = lines3.join('\n');
+      ['rep1', 'rep2', 'rep3'].forEach(id => { const t = $(id); t.style.height = 'auto'; t.style.height = (t.scrollHeight + 4) + 'px'; });
+    });
+  }
+
+  // ---------- tracker ----------
+  const SERIES = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)'];
+  function renderTracker() {
+    const weeks = completedWeeks();
+    const leg = $('trackLegend');
+    const order = league.teams.map((_, i) => i).sort((a, b) => N(a).localeCompare(N(b)));
+    leg.innerHTML = order.map(i => { const k = trackSel.indexOf(i); return `<button type="button" data-i="${i}" aria-pressed="${k >= 0}"><span class="sw" style="${k >= 0 ? `background:${SERIES[k]}` : ''}"></span>${esc(N(i))}</button>`; }).join('');
+    leg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      const i = Number(b.dataset.i); const k = trackSel.indexOf(i);
+      if (k >= 0) trackSel.splice(k, 1); else { if (trackSel.length >= 6) { toast('Up to six teams at a time'); return; } trackSel.push(i); }
+      renderTracker();
+    }));
+    document.querySelectorAll('.tracker [data-metric]').forEach(b => { b.setAttribute('aria-pressed', b.dataset.metric === trackMetric); if (!b.dataset.wired) { b.dataset.wired = '1'; b.addEventListener('click', () => { trackMetric = b.dataset.metric; renderTracker(); }); } });
+    if (!weeks.length) { $('trackProgress').classList.remove('hidden'); $('trackProgress').textContent = 'No completed weeks yet.'; return; }
+    const pr = $('trackProgress');
+    ensureHistory(weeks, (k, n, w) => { pr.classList.remove('hidden'); pr.textContent = `Working out week ${w} (${k + 1} of ${n})…`; }, () => {
+      pr.classList.add('hidden');
+      const pts = weeks.filter(w => histCache[w]).map(w => histCache[w]);
+      drawBump($('vizSeed'), $('tipSeed'), pts);
+      drawProb($('vizProb'), $('tipProb'), pts);
+      drawHistTable(pts);
+    });
+  }
+  function metricOf(o) { return trackMetric === 'one' ? o.seeds[1] : o[trackMetric]; }
+  function metricName() { return { playoffs: 'Playoff berth', div: 'Division', bye: 'Bye', one: '1 seed' }[trackMetric]; }
+  function colorOf(i) { const k = trackSel.indexOf(i); return k >= 0 ? SERIES[k] : null; }
+  function svgFrame(svg, W, H) { svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = ''; }
+  function el(tag, attrs, text) { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; }
+  function drawLines(svg, tip, pts, yOf, yTicks, fmtY, W, H, pad) {
+    svgFrame(svg, W, H);
+    const n = league.nTeams, xs = pts.map((p, k) => pad.l + (pts.length === 1 ? 0 : k * (W - pad.l - pad.r) / (pts.length - 1)));
+    const g = el('g', { class: 'grid' }); yTicks.forEach(t => { const y = yOf(t); g.appendChild(el('line', { x1: pad.l, x2: W - pad.r, y1: y, y2: y })); }); svg.appendChild(g);
+    const ax = el('g', { class: 'axis' });
+    yTicks.forEach(t => ax.appendChild(el('text', { x: pad.l - 8, y: yOf(t) + 4, 'text-anchor': 'end' }, fmtY(t))));
+    pts.forEach((p, k) => ax.appendChild(el('text', { x: xs[k], y: H - pad.b + 16, 'text-anchor': 'middle' }, `Wk ${p.week}`)));
+    svg.appendChild(ax);
+    const vals = i => pts.map(p => yOf(p.v[i]));
+    const hiSet = new Set(trackSel);
+    const draw = (i, hi) => {
+      const d = smoothPath(xs, vals(i));
+      const ln = el('path', { d, class: `ln ${hi ? 'hi' : ''}` }); if (hi) ln.style.stroke = colorOf(i); svg.appendChild(ln);
+      if (hi) pts.forEach((p, k) => {
+        const lastPt = k === pts.length - 1;
+        const c = el('circle', { cx: xs[k], cy: yOf(p.v[i]), r: lastPt ? 5 : 3.5, class: `dot ${lastPt ? 'last' : ''}` }); c.style.stroke = colorOf(i); if (lastPt) c.style.fill = colorOf(i); svg.appendChild(c);
+      });
+    };
+    for (let i = 0; i < n; i++) if (!hiSet.has(i)) draw(i, false);
+    trackSel.forEach(i => draw(i, true));
+    // end labels, nudged apart
+    const last = pts[pts.length - 1];
+    const labs = league.teams.map((_, i) => ({ i, y: yOf(last.v[i]) })).sort((a, b) => a.y - b.y);
+    for (let k = 1; k < labs.length; k++) if (labs[k].y - labs[k - 1].y < 12) labs[k].y = labs[k - 1].y + 12;
+    const floor = H - pad.b - 2; for (let k = labs.length - 1; k >= 0; k--) { const lim = k === labs.length - 1 ? floor : labs[k + 1].y - 12; if (labs[k].y > lim) labs[k].y = lim; }
+    labs.forEach(l => { const hi = hiSet.has(l.i); const t = el('text', { x: xs[xs.length - 1] + 9, y: l.y + 4, class: `lbl ${hi ? 'hi' : ''}` }, hi ? `${N(l.i)} · ${fmtY(last.v[l.i], true)}` : N(l.i)); if (hi) t.style.fill = colorOf(l.i); svg.appendChild(t); });
+    // hover
+    const hov = el('g', { class: 'hover' }); const hl = el('line', { y1: pad.t, y2: H - pad.b, x1: 0, x2: 0 }); hov.appendChild(hl); hov.style.display = 'none'; svg.appendChild(hov);
+    const wrap = svg.parentElement;
+    svg.onmousemove = e => {
+      const r = svg.getBoundingClientRect(); const x = (e.clientX - r.left) * W / r.width;
+      let k = 0; xs.forEach((xx, j) => { if (Math.abs(xx - x) < Math.abs(xs[k] - x)) k = j; });
+      hl.setAttribute('x1', xs[k]); hl.setAttribute('x2', xs[k]); hov.style.display = '';
+      const p = pts[k]; const show = trackSel.length ? trackSel : league.teams.map((_, i) => i);
+      const rows = show.slice().sort((a, b) => (trackMetric && yOf(p.v[a]) - yOf(p.v[b]))).map(i => `${N(i)}: ${fmtY(p.v[i], true)}`);
+      tip.innerHTML = `<b>Week ${p.week}</b><br>${rows.join('<br>')}`; tip.style.display = 'block';
+      const tx = e.clientX - r.left + 14, ty = e.clientY - r.top + 14;
+      tip.style.left = `${Math.min(tx, wrap.clientWidth - tip.offsetWidth - 4)}px`; tip.style.top = `${ty}px`;
+    };
+    svg.onmouseleave = () => { hov.style.display = 'none'; tip.style.display = 'none'; };
+  }
+  // Monotone cubic (Fritsch–Carlson) through the points: smooth, with no overshoot past the data
+  function smoothPath(xs, ys) {
+    const n = xs.length; if (n < 2) return n ? `M${xs[0]},${ys[0]}` : '';
+    const dx = [], dy = [], m = [];
+    for (let k = 0; k < n - 1; k++) { dx.push(xs[k + 1] - xs[k]); dy.push((ys[k + 1] - ys[k]) / (xs[k + 1] - xs[k])); }
+    m[0] = dy[0]; m[n - 1] = dy[n - 2];
+    for (let k = 1; k < n - 1; k++) m[k] = dy[k - 1] * dy[k] <= 0 ? 0 : (dy[k - 1] + dy[k]) / 2;
+    for (let k = 0; k < n - 1; k++) { if (dy[k] === 0) { m[k] = 0; m[k + 1] = 0; continue; } const a = m[k] / dy[k], b = m[k + 1] / dy[k], s = a * a + b * b; if (s > 9) { const t = 3 / Math.sqrt(s); m[k] = t * a * dy[k]; m[k + 1] = t * b * dy[k]; } }
+    let d = `M${xs[0].toFixed(1)},${ys[0].toFixed(1)}`;
+    for (let k = 0; k < n - 1; k++) { const h = dx[k]; d += ` C${(xs[k] + h / 3).toFixed(1)},${(ys[k] + m[k] * h / 3).toFixed(1)} ${(xs[k + 1] - h / 3).toFixed(1)},${(ys[k + 1] - m[k + 1] * h / 3).toFixed(1)} ${xs[k + 1].toFixed(1)},${ys[k + 1].toFixed(1)}`; }
+    return d;
+  }
+  function drawBump(svg, tip, hist) {
+    const W = 760, H = 340, pad = { l: 32, r: 150, t: 12, b: 28 };
+    const pts = hist.map(h => ({ week: h.week, v: h.finish }));
+    const yOf = v => pad.t + (v - 1) * (H - pad.t - pad.b) / 11;
+    drawLines(svg, tip, pts, yOf, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], (v, long) => long ? `${v}${v <= 6 ? ' (in)' : ''}` : String(v), W, H, pad);
+    // playoff line between 6 and 7
+    const y = yOf(6.5); const cut = el('line', { x1: pad.l, x2: W - pad.r, y1: y, y2: y }); cut.style.stroke = 'var(--ink-2)'; cut.style.strokeDasharray = '4 4'; svg.insertBefore(cut, svg.firstChild.nextSibling);
+    svg.appendChild(el('text', { x: pad.l + 4, y: y - 5, class: 'lbl' }, 'playoff line'));
+  }
+  function drawProb(svg, tip, hist) {
+    const W = 760, H = 300, pad = { l: 44, r: 150, t: 12, b: 28 };
+    const pts = hist.map(h => ({ week: h.week, v: h.odds.map(metricOf) }));
+    const yOf = v => pad.t + (1 - v) * (H - pad.t - pad.b);
+    drawLines(svg, tip, pts, yOf, [0, 0.25, 0.5, 0.75, 1], v => `${Math.round(v * 100)}%`, W, H, pad);
+    svg.setAttribute('aria-label', `${metricName()} odds by week`);
+  }
+  function drawHistTable(hist) {
+    const head = `<thead><tr><th>Team</th>${hist.map(h => `<th class="num">Wk ${h.week}</th>`).join('')}</tr></thead>`;
+    const order = league.teams.map((_, i) => i).sort((a, b) => hist[hist.length - 1].finish[a] - hist[hist.length - 1].finish[b]);
+    const body = order.map(i => `<tr><td class="teamcell">${esc(N(i))}</td>${hist.map(h => `<td class="num">${h.finish[i]} · ${Math.round(metricOf(h.odds[i]) * 100)}%</td>`).join('')}</tr>`).join('');
+    $('histTable').innerHTML = head + `<tbody>${body}</tbody>`;
+  }
 
   let toastTimer;
   function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800); }

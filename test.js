@@ -226,3 +226,67 @@ console.log('DATE-ONLY TESTS PASSED');
   console.log('10 avg finish ok', s10.map(t => t.avgFinish.toFixed(1)).join(' '));
 }
 console.log('AVG FINISH TESTS PASSED');
+
+// ---- 11. fair play orders ----
+{
+  const L4 = makeLeague(9);
+  const B4 = E.buildBase(L4);
+  const wk = L4.weeks.find(w => !w.locked); const week = wk.week;
+  // default follows season mu (no models): team 11 highest
+  const d0 = E.defaultFpOrder(L4, B4, null, week, {});
+  assert.strictEqual(d0[0], 11); assert.strictEqual(d0[11], 0);
+  // pick an upset: lowest team beats highest in their game (if they play) else use first game
+  const g = wk.games[0]; const key = `${week}:0`;
+  const hi = B4.model[g.a].mu > B4.model[g.b].mu ? g.a : g.b, lo = hi === g.a ? g.b : g.a;
+  const picks4 = { [key]: lo === g.a ? 1 : 2 };
+  const d1 = E.defaultFpOrder(L4, B4, null, week, picks4);
+  assert.ok(d1.indexOf(lo) < d1.indexOf(hi), 'winner moved above loser');
+  assert.strictEqual(d1.indexOf(hi), d1.indexOf(lo) + 1, 'adjacent at the midpoint');
+  const mid = Math.floor((d0.indexOf(lo) + d0.indexOf(hi)) / 2);
+  assert.strictEqual(d1.indexOf(lo), mid, 'placed at midpoint of former positions');
+  assert.strictEqual(new Set(d1).size, 12);
+  // fpFromOrder + picksFromOrder
+  const fp = E.fpFromOrder(d1, 12); assert.strictEqual(fp[d1[0]], 11); assert.strictEqual(fp[d1[11]], 0);
+  const ip = E.picksFromOrder(L4, week, d1); assert.strictEqual(ip[key], picks4[key]);
+  // scenario uses order for picked teams only
+  const ords = E.effectiveFpOrders(L4, B4, null, picks4, {});
+  const sc4 = E.buildScenario(L4, B4, picks4, {}, ords);
+  assert.ok(Math.abs(sc4.state.fp[lo] - B4.state.fp[lo] - (11 - d1.indexOf(lo))) < 1e-9, 'picked winner gets order FP');
+  const other = d1.find(t => t !== lo && t !== hi);
+  assert.ok(Math.abs(sc4.state.fp[other] - B4.state.fp[other]) < 1e-9, 'unpicked team gets nothing');
+  // user order reconciles with a later contradictory pick
+  const user = d0.slice(); const p2 = { [key]: hi === g.a ? 1 : 2 };
+  const ords2 = E.effectiveFpOrders(L4, B4, null, p2, { [week]: user });
+  assert.ok(ords2[week].indexOf(hi) < ords2[week].indexOf(lo));
+  // share-link round trip with orders
+  const enc = E.encodeScenario(L4, picks4, { fp: {}, pf: {} }, { [week]: d1 });
+  const dec = E.decodeScenario(L4, '#' + enc);
+  assert.deepStrictEqual(dec.fpOrders[week], d1);
+  // simulate with fixed FP for the week
+  const s4 = E.simulate(L4, B4, picks4, {}, 300, 3, null, { fpFixed: { [week]: fp }, seed: 7 });
+  assert.ok(Math.abs(s4.reduce((x, y) => x + y.playoffs, 0) - 6) < 1e-6);
+  // seeded runs are reproducible
+  const r1 = E.simulate(L4, B4, {}, {}, 500, 3, null, { seed: 42 }), r2 = E.simulate(L4, B4, {}, {}, 500, 3, null, { seed: 42 });
+  assert.deepStrictEqual(r1, r2);
+  console.log('11 fair play orders ok');
+}
+
+// ---- 12. positions 7-12 by tiebreakers, history points ----
+{
+  const sd = E.seedPlayoffs(L, base.state);
+  assert.strictEqual(sd.out.length, 6); assert.strictEqual(sd.outLog.length, 6);
+  assert.deepStrictEqual(sd.outLog.map(x => x.pos), [7, 8, 9, 10, 11, 12]);
+  assert.strictEqual(new Set([...sd.seeds.map(x => x.team), ...sd.out]).size, 12);
+  // records never increase down the list
+  const recs = sd.out.map(i => E.pct(base.state.w[i], base.state.l[i], base.state.t[i]));
+  for (let k = 1; k < recs.length; k++) assert.ok(recs[k] <= recs[k - 1] + 1e-9);
+  const h5 = E.historyPoint(L, 5, 300), h9 = E.historyPoint(L, 9, 300);
+  assert.strictEqual(new Set(h5.finish).size, 12); assert.ok(h5.finish.every(f => f >= 1 && f <= 12));
+  const L5 = E.leagueAfterWeek(L, 5);
+  assert.strictEqual(L5.weeks.filter(w => w.locked).length, 5);
+  assert.ok(L5.weeks.find(w => w.week === 7).games.every(g => g.pa === 0));
+  assert.ok(Math.abs(h9.odds.reduce((x, y) => x + y.playoffs, 0) - 6) < 1e-6);
+  const again = E.historyPoint(L, 5, 300); assert.deepStrictEqual(again.odds, h5.odds);
+  console.log('12 ranking + history ok', h9.finish.join(' '));
+}
+console.log('ORDER AND HISTORY TESTS PASSED');
