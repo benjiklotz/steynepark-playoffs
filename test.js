@@ -290,3 +290,54 @@ console.log('AVG FINISH TESTS PASSED');
   console.log('12 ranking + history ok', h9.finish.join(' '));
 }
 console.log('ORDER AND HISTORY TESTS PASSED');
+
+// ---- 13. Fair Play eliminates one team at a time ----
+{
+  // three-way wild-card tie, no sweeps; B and C level on the lowest Fair Play -> only the lower-PF one (C) goes, then A v B restarts (B sweeps A)
+  const s = st(); [0, 1, 2].forEach(i => rec(s, i, 7, 7));
+  s.hw[1][0] = 1; s.hw[1][2] = 1; s.hw[2][1] = 1;                 // B beat A once; B-C split
+  s.fp[0] = 60; s.fp[1] = 50; s.fp[2] = 50; s.pf[1] = 1400; s.pf[2] = 1300;
+  const r = E.resolveSeed([0, 1, 2], s, E.STEPS.wildcard, miniL);
+  assert.strictEqual(r.winner, 1, 'C alone is eliminated, then B beats A head-to-head');
+  assert.ok(r.log.some(l => l.includes('Fair Play: C eliminated')), r.log.join(' | '));
+  console.log('13 one-at-a-time fair play ok', r.log);
+}
+
+// ---- 14. exact clinch / elimination agrees with brute force on 2-weeks-left leagues ----
+{
+  function brute(L4, b4, T, c, R) {
+    const rem = E.remainingGames(L4); const n = 12; const open = L4.weeks.filter(w => !w.locked).length;
+    let hold = false, fail = false;
+    for (let mask = 0; mask < (1 << rem.length); mask++) {
+      const pk = {}; rem.forEach((g, k) => { pk[g.key] = (mask >> k) & 1 ? 1 : 2; });
+      const sc = E.buildScenario(L4, b4, pk, {}, null).state;
+      for (let r = 0; r < R; r++) {
+        const s2 = JSON.parse(JSON.stringify(b4.state));
+        ['w', 'l', 't', 'dw', 'dl', 'dt', 'hw', 'ht'].forEach(k => { s2[k] = JSON.parse(JSON.stringify(sc[k])); });
+        for (let i = 0; i < n; i++) { s2.fp[i] += Math.random() * (n - 1) * open; s2.pf[i] += Math.random() * 600; }
+        const res = E.seedPlayoffs(L4, s2, { quiet: true }); const seeds = []; res.seeds.forEach(x => { seeds[x.seed] = x.team; });
+        const h = c === 1 ? res.divWinners[L4.teams[T].div].winner === T : c === 0 ? seeds.includes(T) : c === 2 ? (seeds[1] === T || seeds[2] === T) : seeds[1] === T;
+        if (h) hold = true; else fail = true;
+      }
+    }
+    return { hold, fail };
+  }
+  let n = 0, certain = 0;
+  for (const seed of [1, 2, 3]) {
+    const L4 = makeLeague(12, seed); const b4 = E.buildBase(L4);
+    for (let T = 0; T < 12; T++) for (let c = 0; c < 4; c++) {
+      const cl = E.exactCheck(L4, b4, {}, {}, {}, T, c, 'clinch', 1e6), el = E.exactCheck(L4, b4, {}, {}, {}, T, c, 'elim', 1e6);
+      const b = brute(L4, b4, T, c, 2);
+      if (cl.verdict === true) { assert.ok(!b.fail, `T${T} c${c} said clinched but a finish fails`); certain++; }
+      if (el.verdict === true) { assert.ok(!b.hold, `T${T} c${c} said eliminated but a finish holds`); certain++; }
+      if (b.hold && b.fail) { assert.strictEqual(cl.verdict, false); assert.strictEqual(el.verdict, false); }
+      n++;
+    }
+  }
+  console.log('14 exact checker ok', n, 'checks,', certain, 'certain verdicts confirmed');
+  // leverage tallies: both branches of every open game are counted
+  const L5 = makeLeague(11, 3); const b5 = E.buildBase(L5);
+  const sim5 = E.simulate(L5, b5, {}, {}, 2000, 3, null, { leverage: true, seed: 9 });
+  assert.strictEqual(sim5.leverage.length, 18); sim5.leverage.forEach(g => assert.strictEqual(g.na + g.nb, 2000));
+}
+console.log('CLINCH TESTS PASSED');
