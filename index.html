@@ -84,6 +84,7 @@ header.top .actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: cen
 .seg button + button { border-left: 1px solid var(--ink); }
 .seg button:hover { background: var(--panel-2); }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+@media (max-width: 600px) { .panel > .ph > .seg { display: flex; width: 100%; } .panel > .ph > .seg button { flex: 1 1 0; padding: 6px 2px; font-size: 12px; white-space: nowrap; } }
 .seg.light { border-color: rgba(247,245,238,.45); }
 .seg.light button { font-size: 12px; padding: 4px 9px; color: var(--on-navy); }
 .seg.light button + button { border-left-color: rgba(247,245,238,.45); }
@@ -112,11 +113,24 @@ main { max-width: 1320px; margin: 0 auto; padding: 18px 20px 60px; display: grid
 /* matchups */
 .matchups { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px 14px; }
 @media (max-width: 600px) { .matchups { padding: 12px; } }
-.mtools { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 4px; }
+.mtools { display: flex; gap: 8px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 4px; }
+.mtools .mbtns { display: flex; gap: 8px; margin-left: auto; }
+details.heatnote { font-size: 12px; color: var(--ink-2); flex: 1 1 260px; min-width: 0; }
+details.heatnote summary { cursor: pointer; list-style: none; padding: 4px 0; }
+details.heatnote summary::-webkit-details-marker { display: none; }
+details.heatnote summary::after { content: ' ⓘ'; color: var(--muted); }
+details.heatnote .hk { display: inline-block; font-family: var(--font-display); font-weight: 700; font-size: 11px; color: #fff; background: var(--accent); padding: 1px 5px; border-radius: 2px; margin-right: 4px; }
+details.heatnote p { margin: 4px 0 6px; max-width: 70ch; color: var(--muted); }
 .mu { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 8px; }
 .mu > * { min-width: 0; }
 .mu .vs { align-self: center; color: var(--muted); font-size: 12px; width: 30px; text-align: center; }
-.mu .vs.heat { font-family: var(--font-display); font-weight: 700; font-size: 13px; line-height: 1; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--rule-2); border-radius: 2px; color: var(--muted); margin: 0 2px; cursor: help; }
+.mu .vs.heat { font-family: var(--font-display); line-height: 1; width: 34px; height: 36px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 1px solid var(--rule-2); border-radius: 2px; color: var(--muted); margin: 0 -2px; cursor: help; }
+.mu .vs.heat b { font-weight: 700; font-size: 15px; }
+.mu.muhead { margin-bottom: -2px; }
+.mu.muhead .muh { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.mu.muhead .muh.right { text-align: right; }
+.mu .vs.heathead { width: 34px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); border-bottom: 2px solid var(--accent); padding-bottom: 2px; margin: 0 -2px; cursor: help; }
+.mu .vs.heat small { font-family: var(--font-body); font-size: 8.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .85; }
 .mu .vs.heat.h4, .mu .vs.heat.h5, .mu .vs.heat.h6 { color: var(--ink); border-color: var(--ink-2); }
 .mu .vs.heat.h7, .mu .vs.heat.h8 { color: var(--accent-ink); border-color: var(--accent); background: var(--accent-soft); }
 .mu .vs.heat.h9, .mu .vs.heat.h10 { color: #fff; border-color: var(--accent); background: var(--accent); }
@@ -182,6 +196,10 @@ details.fpo summary .hint { font-weight: 400; font-size: 13px; color: var(--mute
 .fprow.over { box-shadow: inset 0 2px 0 var(--ink); }
 .fprow.over-below { box-shadow: inset 0 -2px 0 var(--ink); }
 .fpo.touched summary .hint { color: var(--accent-ink); }
+.sclist { margin: 6px 0 4px; padding-left: 18px; font-size: 13px; }
+.sclist li { margin: 4px 0; }
+.sclist .sc { background: var(--panel-2); padding: 1px 6px; border-radius: 2px; }
+.sclist em { color: var(--muted); font-style: normal; font-size: 12px; }
 
 /* team view */
 .teamgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0; padding: 12px 14px 0; border-collapse: collapse; }
@@ -480,7 +498,7 @@ footer summary { cursor: pointer; font-weight: 600; }
 </footer>
 <div class="toast" id="toast" role="status"></div>
 
-<script>
+<script id="engine-src">
 /* Playoff engine: standings, league-specific tiebreakers, projections, Monte Carlo.
    Pure functions over plain data so the same code runs in node tests and the browser. */
 (function (root) {
@@ -844,6 +862,9 @@ footer summary { cursor: pointer; font-weight: 600; }
     const lev = opts && opts.leverage ? remainingGames(league).filter(g => !(picks[g.key] | 0)).map(g => ({ key: g.key, week: g.week, a: g.a, b: g.b, na: 0, nb: 0, ca: new Float64Array(n * 4), cb: new Float64Array(n * 4) })) : null;
     const levIdx = {}; if (lev) lev.forEach((g, k) => { levIdx[g.key] = k; });
     const won = lev ? new Uint8Array(lev.length) : null;
+    // per week: which combination of that week's open results happened, and who met each criterion
+    const wkT = lev ? {} : null, wkMask = {};
+    if (lev) league.weeks.forEach(wk => { if (wk.locked) return; const open = wk.games.map((g, gi) => gi).filter(gi => !(picks[`${wk.week}:${gi}`] | 0)); if (open.length && open.length <= 8) wkT[wk.week] = { open, n: new Uint32Array(1 << open.length), hold: new Uint32Array((1 << open.length) * n * 4) }; });
     const crit = lev ? new Uint8Array(n * 4) : null;
     rng = opts && opts.seed != null ? mulberry32(opts.seed) : Math.random; spare = null;
     const tally = Array.from({ length: n }, () => ({ playoffs: 0, div: 0, seeds: new Array(7).fill(0), seedSum: 0, finishSum: 0 }));
@@ -866,6 +887,7 @@ footer summary { cursor: pointer; font-weight: 600; }
           addResult(s, league, g.a, g.b, res);
           if (lev && !p) won[levIdx[`${wk.week}:${gi}`]] = res;
         });
+        if (lev && wkT[wk.week]) { let msk = 0; wkT[wk.week].open.forEach((gi, b) => { if (won[levIdx[`${wk.week}:${gi}`]] === 1) msk |= 1 << b; }); wkMask[wk.week] = msk; }
         const fixed = fpFixed[wk.week];
         if (fixed) for (let i = 0; i < n; i++) { fpAdd[i] += fixed[i]; pfAdd[i] += scores[i]; }
         else for (let i = 0; i < n; i++) { fpAdd[i] += allPlayWins(scores, i); pfAdd[i] += scores[i]; }
@@ -879,6 +901,7 @@ footer summary { cursor: pointer; font-weight: 600; }
       for (const d in r.divWinners) { const w = r.divWinners[d].winner; tally[w].div++; if (lev) crit[w * 4 + 1] = 1; }
       for (const sd of r.seeds) { const t = tally[sd.team]; t.playoffs++; t.seeds[sd.seed]++; t.seedSum += sd.seed; t.finishSum += sd.seed; if (lev) { crit[sd.team * 4] = 1; if (sd.seed <= 2) crit[sd.team * 4 + 2] = 1; if (sd.seed === 1) crit[sd.team * 4 + 3] = 1; } }
       if (lev) for (let k = 0; k < lev.length; k++) { const g = lev[k]; if (won[k] === 1) { g.na++; for (let q = 0; q < crit.length; q++) g.ca[q] += crit[q]; } else { g.nb++; for (let q = 0; q < crit.length; q++) g.cb[q] += crit[q]; } }
+      if (lev) for (const w in wkT) { const t = wkT[w], msk = wkMask[w]; t.n[msk]++; const off = msk * n * 4; for (let q = 0; q < crit.length; q++) t.hold[off + q] += crit[q]; }
       r.out.forEach((team, k) => { tally[team].finishSum += r.seeds.length + 1 + k; }); // 7th-12th by the wild-card tiebreakers
     }
     rng = Math.random; spare = null;
@@ -893,7 +916,7 @@ footer summary { cursor: pointer; font-weight: 600; }
       avgSeed: t.playoffs ? t.seedSum / t.playoffs : null, // average seed when making the playoffs
       avgFinish: t.finishSum / nSims,                      // average finishing position 1-12 across all simulations
     }));
-    if (leverage) out.leverage = leverage;
+    if (leverage) { out.leverage = leverage; out.weekTally = {}; for (const w in wkT) out.weekTally[w] = { open: wkT[w].open, n: Array.from(wkT[w].n), hold: Array.from(wkT[w].hold) }; }
     return out;
   }
 
@@ -1070,6 +1093,31 @@ footer summary { cursor: pointer; font-weight: 600; }
     return { verdict: out === null ? null : ok, nodes, free: free.length };
   }
 
+  // Smallest set of conditions covering the given outcomes of k two-way games. Each outcome is a k-bit mask
+  // (bit b = 1 when the first-listed team of open game b wins). Returns implicants as arrays over games: 1 = first
+  // team wins, 2 = second team wins, 0 = either. Classic prime-implicant search; k is at most 8 here.
+  function implicants(k, minterms) {
+    const S = new Set(minterms); const total = 1 << k;
+    if (S.size === total) return [new Array(k).fill(0)];
+    if (!S.size) return [];
+    const pats = []; const pow3 = Math.pow(3, k);
+    for (let code = 0; code < pow3; code++) {
+      const pat = []; let c = code; for (let b = 0; b < k; b++) { pat.push(c % 3); c = Math.floor(c / 3); }
+      const freeBits = pat.map((v, b) => v === 0 ? b : -1).filter(b => b >= 0);
+      let ok = true, cover = [];
+      for (let f = 0; f < (1 << freeBits.length) && ok; f++) {
+        let m = 0; pat.forEach((v, b) => { if (v === 1) m |= 1 << b; }); freeBits.forEach((b, j) => { if (f & (1 << j)) m |= 1 << b; });
+        if (!S.has(m)) ok = false; else cover.push(m);
+      }
+      if (ok) pats.push({ pat, cover, size: freeBits.length });
+    }
+    pats.sort((a, b) => b.size - a.size);
+    const prime = pats.filter(p => !pats.some(q => q !== p && q.size > p.size && p.pat.every((v, b) => q.pat[b] === 0 || q.pat[b] === v)));
+    const left = new Set(S), out = [];
+    while (left.size) { let best = null, bc = 0; for (const p of prime) { const c = p.cover.filter(m => left.has(m)).length; if (c > bc) { bc = c; best = p; } } if (!best) break; out.push(best.pat); best.cover.forEach(m => left.delete(m)); }
+    return out;
+  }
+
   // ---------- season history ----------
   // The league as it stood after week X: weeks <= X locked with their scores, later weeks unplayed.
   function leagueAfterWeek(league, X) {
@@ -1221,7 +1269,7 @@ footer summary { cursor: pointer; font-weight: 600; }
     return { picks, overrides, fpOrders };
   }
 
-  root.Engine = { pct, fmtRec, buildBase, buildScenario, remainingGames, teamRemaining, resolveSeed, seedPlayoffs, simulate, winProb, encodeScenario, decodeScenario, projectedFP, projectedPF, optimalLineup, buildWeekModels, defaultFpOrder, reconcileOrder, effectiveFpOrders, fpFromOrder, picksFromOrder, leagueAfterWeek, historyPoint, exactCheck, seedBranches, CRIT, STEPS };
+  root.Engine = { pct, fmtRec, buildBase, buildScenario, remainingGames, teamRemaining, resolveSeed, seedPlayoffs, simulate, winProb, encodeScenario, decodeScenario, projectedFP, projectedPF, optimalLineup, buildWeekModels, defaultFpOrder, reconcileOrder, effectiveFpOrders, fpFromOrder, picksFromOrder, leagueAfterWeek, historyPoint, exactCheck, seedBranches, implicants, CRIT, STEPS };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -1552,12 +1600,16 @@ footer summary { cursor: pointer; font-weight: 600; }
       let mid;
       if (wk.locked) mid = '<span class="vs">final</span>';
       else if (pick || !sim || heat[key] == null) mid = '<span class="vs">v</span>';
-      else mid = `<span class="vs heat h${heat[key]}" title="Playoff heat ${heat[key]} of 10: how much this result swings playoff, division, bye and 1-seed chances across the league, relative to the hottest unpicked game">${heat[key]}</span>`;
+      else mid = `<span class="vs heat h${heat[key]}" title="Playoff heat ${heat[key]} of 10: how much this result swings playoff, division, bye and 1-seed chances across the league, relative to the hottest unpicked game"><b>${heat[key]}</b><small>heat</small></span>`;
       return `<div class="mu">${sideHtml(g.a, g.b, wk, gi, false, pick)}${mid}${sideHtml(g.b, g.a, wk, gi, true, pick)}</div>`;
     }).join('');
-    const tools = wk.locked ? '' : `<div class="mtools"><button class="btn sm" type="button" id="wkFav">Favourites this week</button><button class="btn sm" type="button" id="wkClear">Clear this week</button></div>`;
-    $('matchups').innerHTML = tools + rows + (wk.locked ? '' : fpPanelHtml(wk));
-    if (!wk.locked) wireFpPanel(wk);
+    const anyHeat = !wk.locked && sim && wk.games.some((g, gi) => !(picks[`${wk.week}:${gi}`] | 0) && heat[`${wk.week}:${gi}`] != null);
+    const heatNote = anyHeat ? `<details class="heatnote"><summary><span class="hk">0–10</span> Playoff heat: how much each game matters to the playoff race</summary>
+      <p>The number between each pair is how much that game's result changes the league's playoff picture: everyone's chances of a playoff spot, with division, bye and 1-seed chances counting at smaller weight. It's relative: the most important open game across all remaining weeks scores 10 and the rest are scaled against it, so a 5 matters about half as much. Games you've already picked aren't scored, and the numbers update as you pick.</p></details>` : '';
+    const tools = wk.locked ? '' : `<div class="mtools">${heatNote}<span class="mbtns"><button class="btn sm" type="button" id="wkFav">Favourites this week</button><button class="btn sm" type="button" id="wkClear">Clear this week</button></span></div>`;
+    const colHead = wk.locked ? '' : `<div class="mu muhead"><span class="muh">Matchup</span><span class="vs heathead" title="Playoff heat, 0–10: how much each result swings the playoff race, relative to the hottest open game">Heat</span><span class="muh right">Matchup</span></div>`;
+    $('matchups').innerHTML = tools + colHead + rows + (wk.locked ? '' : fpPanelHtml(wk) + weekScenHtml(wk));
+    if (!wk.locked) { wireFpPanel(wk); const d = $('wscen'); if (d) d.addEventListener('toggle', () => { wsOpen[wk.week] = d.open; if (d.open) { renderWeekScen(); scheduleWeekScen(); } }); renderWeekScen(); scheduleWeekScen(); }
     $('matchups').querySelectorAll('button.side').forEach(b => b.addEventListener('click', () => {
       const v = Number(b.dataset.val); const k = b.dataset.key;
       setPick(k, picks[k] === v ? 0 : v);
@@ -1722,17 +1774,18 @@ footer summary { cursor: pointer; font-weight: 600; }
 
   // ---------- workers: the simulation and the exact clinch search run off the main thread ----------
   const WORKER_SRC = (() => {
-    const eng = document.querySelector('script').textContent;
+    const el = document.getElementById('engine-src'); const eng = el ? el.textContent : '';
     return eng + `
 self.onmessage = e => {
   const m = e.data; const E = self.Engine;
   if (m.type === 'sim') {
     const r = E.simulate(m.league, m.base, m.picks, m.overrides, m.nSims, 3, m.models, { fpFixed: m.fpFixed, leverage: true });
-    self.postMessage({ type: 'sim', id: m.id, tally: r.map(x => x), leverage: r.leverage });
+    self.postMessage({ type: 'sim', id: m.id, tally: r.map(x => x), leverage: r.leverage, weekTally: r.weekTally });
   } else if (m.type === 'exact') {
     m.jobs.forEach((j, k) => {
-      const r = E.exactCheck(m.league, m.base, m.picks, m.overrides, m.fpOrders, j.T, j.c, j.mode, m.budget);
-      self.postMessage({ type: 'exactResult', id: m.id, T: j.T, c: j.c, mode: j.mode, verdict: r.verdict, nodes: r.nodes, free: r.free, done: k + 1, total: m.jobs.length });
+      const pk = j.extra ? Object.assign({}, m.picks, j.extra) : m.picks;
+      const r = E.exactCheck(m.league, m.base, pk, m.overrides, m.fpOrders, j.T, j.c, j.mode, m.budget);
+      self.postMessage({ type: 'exactResult', id: m.id, T: j.T, c: j.c, mode: j.mode, o: j.o, verdict: r.verdict, nodes: r.nodes, free: r.free, done: k + 1, total: m.jobs.length });
     });
     self.postMessage({ type: 'exactDone', id: m.id });
   }
@@ -1742,7 +1795,12 @@ self.onmessage = e => {
     try { const w = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], { type: 'text/javascript' }))); w.onmessage = onmsg; return w; }
     catch (e) { console.warn('Web worker unavailable, running on the main thread', e); return null; }
   }
-  let simWorker = null, simId = 0, exactWorker = null, exactId = 0;
+  let simWorker = null, simId = 0, exactWorker = null, exactId = 0, workersOk = true;
+  function runSimHere() {
+    const n = Number($('nsims').value) || 10000;
+    const r = E.simulate(league, base, picks, overrides, n, 3, models, { fpFixed: fpFixedNow(), leverage: true });
+    onSimResult(r, r.leverage, r.weekTally);
+  }
   const plainLeague = () => league; // structured-clone safe (plain data)
   function fpFixedNow() { const f = {}; for (const w in fpOrders) if (orders[w]) f[w] = E.fpFromOrder(orders[w], league.nTeams); return f; }
 
@@ -1752,22 +1810,23 @@ self.onmessage = e => {
     simTimer = setTimeout(() => {
       const n = Number($('nsims').value) || 10000;
       const id = ++simId;
-      if (simWorker === null) simWorker = makeWorker(onSimMessage);
-      if (simWorker === null) {
-        const r = E.simulate(league, base, picks, overrides, n, 3, models, { fpFixed: fpFixedNow(), leverage: true });
-        onSimResult(r, r.leverage);
-        return;
+      if (workersOk && simWorker === null) {
+        simWorker = makeWorker(onSimMessage);
+        if (simWorker) simWorker.onerror = ev => { console.warn('Simulation worker failed, running on the main thread', ev.message || ev); try { simWorker.terminate(); } catch (e) { /* ignore */ } simWorker = null; workersOk = false; runSimHere(); };
       }
-      simWorker.postMessage({ type: 'sim', id, league: plainLeague(), base, picks, overrides, nSims: n, models, fpFixed: fpFixedNow() });
+      if (!workersOk || !simWorker) { workersOk = false; runSimHere(); return; }
+      try { simWorker.postMessage({ type: 'sim', id, league: plainLeague(), base, picks, overrides, nSims: n, models, fpFixed: fpFixedNow() }); }
+      catch (e) { console.warn('Could not hand the simulation to a worker', e); workersOk = false; runSimHere(); }
     }, 120);
   }
-  function onSimMessage(e) { if (e.data.type !== 'sim' || e.data.id !== simId) return; onSimResult(e.data.tally, e.data.leverage); }
-  function onSimResult(tally, leverage) {
-    sim = tally; sim.leverage = leverage;
+  function onSimMessage(e) { if (e.data.type !== 'sim' || e.data.id !== simId) return; onSimResult(e.data.tally, e.data.leverage, e.data.weekTally); }
+  function onSimResult(tally, leverage, weekTally) {
+    sim = tally; sim.leverage = leverage; sim.weekTally = weekTally || {};
     computeHeat();
     renderProb(); renderSeeds();
     if (view === 'week') renderWeek(); else if (view === 'scen') renderScenarios();
     scheduleExact();
+    scheduleWeekScen();
   }
 
   // playoff heat per unpicked game: how far this result swings chances across the league, 0-10 relative to the hottest game
@@ -1799,8 +1858,9 @@ self.onmessage = e => {
     }
     if (exactWorker) { exactWorker.terminate(); exactWorker = null; }
     if (!jobs.length) { exactBusy = false; exactNote = ''; renderExactDependents(); return; }
-    exactWorker = makeWorker(onExactMessage);
-    if (!exactWorker) { exactNote = 'Exact checks need a browser with web workers.'; renderExactDependents(); return; }
+    exactWorker = workersOk ? makeWorker(onExactMessage) : null;
+    if (!exactWorker) { exactBusy = false; exactNote = 'Exact clinch checks are unavailable in this browser.'; jobs.forEach(j => { exact.res[`${j.T}:${j.c}`] = 'unknown'; }); renderExactDependents(); return; }
+    exactWorker.onerror = ev => { console.warn('Clinch worker failed', ev.message || ev); exactBusy = false; exactNote = 'Exact clinch checks failed to run.'; jobs.forEach(j => { if (exact.res[`${j.T}:${j.c}`] === undefined) exact.res[`${j.T}:${j.c}`] = 'unknown'; }); renderExactDependents(); };
     const id = ++exactId;
     exactBusy = true; exactNote = `Checking ${jobs.length} possible clinch${jobs.length === 1 ? '' : 'es'}…`; renderExactDependents();
     exactWorker.postMessage({ type: 'exact', id, league: plainLeague(), base, picks, overrides, fpOrders, jobs, budget: 4e6 });
@@ -1815,6 +1875,79 @@ self.onmessage = e => {
     } else if (m.type === 'exactDone') { exactBusy = false; exactNote = ''; renderExactDependents(); }
   }
   function exactStatus(i, c) { return (exact.res && exact.res[`${i}:${c}`]) || 'pending'; }
+
+  // ---------- this week's clinching scenarios ----------
+  // For the open week on screen: which combinations of this week's results would clinch or eliminate something,
+  // whatever happens afterwards. Candidate combinations come from the simulation (a clinch needs every sampled
+  // finish with that combination to hold; an elimination needs none to), then each candidate is checked exactly.
+  let weekScen = { key: null, week: null, res: {}, busy: false, note: '', total: 0, done: 0 };
+  const wsOpen = {};
+  let scenWorker = null, scenId = 0;
+  function scheduleWeekScen() {
+    const week = curTab; const wk = league.weeks.find(w => w.week === week);
+    if (!sim || !sim.weekTally || !wk || wk.locked || !wsOpen[week] || view !== 'week') return;
+    const key = `${week}|${exactKey()}`;
+    if (weekScen.key === key) return;
+    const wt = sim.weekTally[String(week)];
+    if (scenWorker) { scenWorker.terminate(); scenWorker = null; }
+    weekScen = { key, week, res: {}, busy: false, note: '', total: 0, done: 0, open: wt ? wt.open : [] };
+    if (!wt) { renderWeekScen(); return; }
+    const n = league.nTeams, k = wt.open.length, N2 = 1 << k;
+    const jobs = [];
+    for (let T = 0; T < n; T++) for (let c = 0; c < 4; c++) {
+      const root = exactStatus(T, c);
+      if (root === 'clinched' || root === 'eliminated') continue;    // settled already, nothing this week decides
+      for (let o = 0; o < N2; o++) {
+        const cnt = wt.n[o], h = wt.hold[o * n * 4 + T * 4 + c];
+        const extra = {}; wt.open.forEach((gi, b) => { extra[`${week}:${gi}`] = (o >> b) & 1 ? 1 : 2; });
+        if (cnt === 0 || h === cnt) jobs.push({ T, c, mode: 'clinch', o, extra });
+        if (cnt === 0 || h === 0) jobs.push({ T, c, mode: 'elim', o, extra });
+      }
+    }
+    if (!jobs.length) { renderWeekScen(); return; }
+    scenWorker = workersOk ? makeWorker(onScenMessage) : null;
+    if (!scenWorker) { weekScen.note = 'Needs a browser with web workers.'; renderWeekScen(); return; }
+    const id = ++scenId;
+    weekScen.busy = true; weekScen.total = jobs.length; weekScen.note = `Checking ${jobs.length} combinations…`; renderWeekScen();
+    scenWorker.onerror = () => { weekScen.busy = false; weekScen.note = 'The check failed to run.'; renderWeekScen(); };
+    scenWorker.postMessage({ type: 'exact', id, league: plainLeague(), base, picks, overrides, fpOrders, jobs, budget: 1.5e6 });
+  }
+  function onScenMessage(e) {
+    const m = e.data; if (m.id !== scenId) return;
+    if (m.type === 'exactResult') {
+      if (m.verdict === true) { const k = `${m.T}:${m.c}:${m.mode}`; (weekScen.res[k] = weekScen.res[k] || []).push(m.o); }
+      weekScen.done = m.done; weekScen.note = `Checking combinations… ${m.done} of ${m.total}`;
+      if (m.done % 10 === 0) renderWeekScen();
+    } else if (m.type === 'exactDone') { weekScen.busy = false; weekScen.note = ''; renderWeekScen(); }
+  }
+  function weekScenHtml(wk) {
+    const open = wsOpen[wk.week];
+    return `<details class="fpo wscen" id="wscen" ${open ? 'open' : ''}><summary><span class="ttl">Clinching scenarios, week ${wk.week}</span><span class="hint" id="wscenHint"></span></summary><div id="wscenBody"></div></details>`;
+  }
+  function renderWeekScen() {
+    const body = $('wscenBody'); const hint = $('wscenHint'); if (!body) return;
+    const wk = league.weeks.find(w => w.week === curTab); if (!wk || wk.locked) return;
+    if (!wsOpen[wk.week]) { if (hint) hint.textContent = ''; return; }
+    if (!sim) { body.innerHTML = '<p class="fpnote">Turn on Live odds to work out this week\'s scenarios.</p>'; return; }
+    const openGi = wk.games.map((g, gi) => gi).filter(gi => !(picks[`${wk.week}:${gi}`] | 0));
+    if (!openGi.length) { body.innerHTML = '<p class="fpnote">Every game this week is picked. The Scenarios tab shows what those picks settle.</p>'; if (hint) hint.textContent = ''; return; }
+    if (weekScen.week !== wk.week || weekScen.key !== `${wk.week}|${exactKey()}`) { body.innerHTML = '<p class="fpnote">Working…</p>'; return; }
+    const what = ['a playoff spot', 'the division', 'a bye', 'the 1 seed'];
+    const games = weekScen.open.map(gi => wk.games[gi]);
+    const cond = (pat, T) => pat.map((v, b) => { if (!v) return null; const g = games[b]; const w = v === 1 ? g.a : g.b, l = v === 1 ? g.b : g.a; if (w === T) return `${N(T)} wins`; if (l === T) return `${N(T)} loses`; return `${N(w)} beats ${N(l)}`; }).filter(Boolean);
+    const rows = [];
+    const teamOrder = [...seeding.seeds.map(x => x.team), ...seeding.out];
+    for (const T of teamOrder) for (const mode of ['clinch', 'elim']) for (let c = 0; c < 4; c++) {
+      if (mode === 'elim' && c !== 0) continue;
+      const os = weekScen.res[`${T}:${c}:${mode}`]; if (!os || !os.length) continue;
+      const pats = E.implicants(games.length, os);
+      const txt = pats.map(p => { const cs = cond(p, T); return cs.length ? cs.join(' and ') : 'any results'; });
+      rows.push(`<li><b>${esc(N(T))}</b> ${mode === 'clinch' ? `clinches ${what[c]}` : 'is eliminated from the playoffs'} if ${txt.map(t => `<span class="sc">${esc(t)}</span>`).join(' <em>or</em> ')}</li>`);
+    }
+    const status = weekScen.busy ? `<p class="fpnote">${esc(weekScen.note)}</p>` : weekScen.note ? `<p class="fpnote">${esc(weekScen.note)}</p>` : '';
+    body.innerHTML = `<p class="fpnote">What this week's open results alone would settle, whatever happens in later weeks. Already-settled outcomes are left out; see the Scenarios tab for those.</p>${status}${rows.length ? `<ul class="sclist">${rows.join('')}</ul>` : (weekScen.busy ? '' : '<p class="fpnote">Nothing can be clinched or lost this week under these picks.</p>')}`;
+    if (hint) hint.textContent = weekScen.busy ? 'checking…' : rows.length ? `${rows.length} scenario${rows.length === 1 ? '' : 's'}` : 'none this week';
+  }
   function renderExactDependents() { renderProb(); if (view === 'scen') renderScenarios(); }
   function renderProb() {
     if (!sim || !liveProb) { $('probTable').innerHTML = `<tbody><tr><td class="muted small">Turn on Live to simulate the unpicked games.</td></tr></tbody>`; return; }
@@ -1846,7 +1979,7 @@ self.onmessage = e => {
     const free = E.remainingGames(league).filter(g => !(picks[g.key] | 0)).length;
     const lab = { clinched: '<b class="st clinch">Clinched</b>', eliminated: '<b class="st elim">Eliminated</b>', alive: '<span class="st alive">Alive</span>', unknown: '<span class="st alive" title="Too many open games to check every finish; pick more games to narrow it">Unverified</span>', pending: '<span class="st alive muted">…</span>' };
     let html = `<thead><tr><th>Team</th><th class="num">W-L</th>${CRIT_NAMES.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>`;
-    for (const i of order) html += `<tr><td class="teamcell">${esc(N(i))}</td><td class="num">${recOf(s, i)}</td>${[0, 1, 2, 3].map(c => `<td>${lab[sim ? exactStatus(i, c) : 'pending']}</td>`).join('')}</tr>`;
+    for (const i of order) html += `<tr><td class="teamcell">${esc(N(i))}</td><td class="num">${recOf(s, i)}</td>${[0, 1, 2, 3].map(c => { const st = sim ? exactStatus(i, c) : 'pending'; const p = sim ? [sim[i].playoffs, sim[i].div, sim[i].bye, sim[i].seeds[1]][c] : null; const cell = st === 'alive' ? `<span class="num" title="Chance in the simulation">${pctS(p)}</span>` : st === 'unknown' && p != null ? `<span class="num" title="Too many open games to check every finish">${pctS(p)}*</span>` : lab[st]; return `<td>${cell}</td>`; }).join('')}</tr>`;
     $('clinchTable').innerHTML = html + '</tbody>';
     const lines = [];
     if (sim) {
@@ -1857,7 +1990,7 @@ self.onmessage = e => {
       [1, 2, 3].forEach(c => { const t = order.filter(i => exactStatus(i, c) === 'eliminated' && exactStatus(i, 0) !== 'eliminated'); if (t.length) lines.push(`Out of ${what[c]}: ${t.map(N).join(', ')}.`); });
     }
     $('clinchSummary').innerHTML = lines.length ? lines.map(l => `<p>${esc(l)}</p>`).join('') : `<p class="muted">Nothing is settled yet with ${free} game${free === 1 ? '' : 's'} still open under these picks.</p>`;
-    $('clinchNote').textContent = (exactBusy ? exactNote + ' ' : '') + `Exact: a clinch or elimination here holds for every result of the ${free} open game${free === 1 ? '' : 's'} and every way the Fair Play and Points For tiebreakers could fall. "Alive" means at least one finish goes each way.`;
+    $('clinchNote').textContent = (exactBusy ? exactNote + ' ' : '') + `A clinch or elimination here holds for every result of the ${free} open game${free === 1 ? '' : 's'} and every way the Fair Play and Points For tiebreakers could fall. Everything else shows the simulated chance (an asterisk means it could not be checked exhaustively).`;
     // what matters for a team
     const sel = $('scenTeam');
     const tOrder = league.teams.map((_, i) => i).sort((a, b) => N(a).localeCompare(N(b)));
